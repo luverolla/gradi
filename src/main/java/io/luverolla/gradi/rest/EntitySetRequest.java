@@ -1,5 +1,6 @@
 package io.luverolla.gradi.rest;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -18,7 +19,7 @@ public class EntitySetRequest<E extends BaseEntity>
 {
     private Optional<Integer> page;
     private Optional<Integer> limit;
-    private Optional<String> order;
+    private Optional<List<String>> orders;
     // key is entity's property, value is searched value
     private Optional<Map<String, Object>> filters;
 }
