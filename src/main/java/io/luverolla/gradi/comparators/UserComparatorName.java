@@ -11,7 +11,7 @@ import java.util.Comparator;
 @AllArgsConstructor
 public class UserComparatorName implements Comparator<User>
 {
-    private boolean desc = false;
+    private Boolean desc = false;
 
     @Override
     public int compare(User o1, User o2)

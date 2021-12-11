@@ -3,15 +3,13 @@ package io.luverolla.gradi.comparators;
 import io.luverolla.gradi.entities.User;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import java.util.Comparator;
 
-@NoArgsConstructor
 @AllArgsConstructor
 public class UserComparatorCode implements Comparator<User>
 {
-    private boolean desc = false;
+    private Boolean desc = false;
 
     @Override
     public int compare(User o1, User o2)
