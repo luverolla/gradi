@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
+@Table(name = "gradi_resources")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,13 +21,28 @@ public class Resource extends CodedEntity
     @Column(columnDefinition = "text")
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "resource_id", nullable = false)
     private ResourceType type;
+    
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "parent_id")
+    private Resource parent;
+    
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Set<Resource> children;
+    
+    @OneToMany(mappedBy = "resource", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Set<ResourceFile> files;
 
-    @OneToMany(mappedBy = "resource")
+    @OneToMany(mappedBy = "resource", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<ResourceAttribute> attributes;
 
-    @OneToMany(mappedBy = "resource")
+    @OneToMany(mappedBy = "resource", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<ResourcePermission> permissions;
+    
+    public String getURI()
+    {
+    	return "/resources/" + getCode();
+    }
 }

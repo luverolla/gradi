@@ -2,15 +2,17 @@ package io.luverolla.gradi.services;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
+
 import static java.util.Map.entry;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import io.luverolla.gradi.entities.User;
 import io.luverolla.gradi.repositories.UserRepository;
+import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.Filter;
 
@@ -39,50 +41,37 @@ public class UserService extends EntityService<User>
     );
 
     @Override
-    public Comparator<User> getComparator(String s)
+    protected Map<String, Class<? extends Comparator<User>>> getComparatorMap()
     {
-        // parameter order is in form '{PROP},{ASC|DESC}'
-        String prop = s.split(",")[0].toLowerCase();
-        String way = s.split(",")[1].toLowerCase();
-
-        // sanity check
-        if(!CMPTS.containsKey(prop) || !(way == "asc" || way == "desc"))
-            return null;
-
-        try
-        {
-            // our comparator's constructors take a 'desc' boolean varible as argument, if order is descendent
-            return (Comparator<User>) CMPTS.get(prop).getDeclaredConstructor(Boolean.class).newInstance(way == "desc");
-        }
-        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
-        {
-            e.printStackTrace();
-        }
-
-        return null;
+    	return CMPTS;
     }
     
     @Override
-    public Filter<User> getFilter(Map<String, Object> m)
+    protected Map<String, Class<? extends Filter<User>>> getFilterMap()
     {
-    	// there is only one entry
-    	String key = m.keySet().iterator().next();
-    	Object value = m.get(key);
+    	return FLTRS;
+    }
+    
+    @Override
+    protected JpaRepository<User, Long> repo()
+    {
+    	return repo;
+    }
+    
+    @Override
+    public Set<User> get(EntitySetRequest<User> req)
+    {
+    	Set<User> data = super.get(req);
     	
-        // sanity check
-        if(!FLTRS.containsKey(key))
-            return null;
-
-        try
-        {
-            // our filter's constructors take a 'value' object
-            return (Filter<User>) CMPTS.get(key).getDeclaredConstructor(Object.class).newInstance(value);
-        }
-        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
-        {
-            e.printStackTrace();
-        }
-
-        return null;
+    	// we don't want the admin data to be shows as normal users
+    	data.removeIf(u -> u.getCode().equals("00000"));
+    	return data;
+    }
+    
+    @Override
+    public User get(String code)
+    {
+    	// we don't want the admin data to be shows as normal users
+    	return code.equals("00000") ? null : super.get(code);
     }
 }

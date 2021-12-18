@@ -2,7 +2,6 @@ package io.luverolla.gradi.rest;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import io.luverolla.gradi.structures.BaseEntity;
 
@@ -17,9 +16,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class EntitySetRequest<E extends BaseEntity>
 {
-    private Optional<Integer> page;
-    private Optional<Integer> limit;
-    private Optional<List<String>> orders;
+    private Integer page;
+    private Integer limit;
+    private List<String> orders;
     // key is entity's property, value is searched value
-    private Optional<Map<String, Object>> filters;
+    private Map<String, Object> filters;
 }

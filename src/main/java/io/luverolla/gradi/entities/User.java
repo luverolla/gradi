@@ -6,15 +6,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+
 import java.util.Set;
 
 @Entity
+@Table(name = "gradi_users")
 @Getter
 @Setter
 @NoArgsConstructor
 public class User extends CodedEntity
 {
-    public enum Role { ADMIN, EDITOR, USER };
+    public enum Role { USER, EDITOR, ADMIN };
 
     @Column(nullable = false)
     private String name;
@@ -24,6 +26,9 @@ public class User extends CodedEntity
 
     @Column(nullable = false, unique = true)
     private String email;
+    
+    @Column(nullable = false)
+    private String password;
 
     @Column(columnDefinition = "text")
     private String description;
@@ -32,7 +37,7 @@ public class User extends CodedEntity
     @Enumerated(EnumType.ORDINAL)
     private Role role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<ResourcePermission> permissions;
 
     public String getFullName()
@@ -43,5 +48,10 @@ public class User extends CodedEntity
     public String getRecipientName()
     {
         return getFullName() + " <" + email + ">";
+    }
+    
+    public String getURI()
+    {
+    	return "/users/" + getCode();
     }
 }

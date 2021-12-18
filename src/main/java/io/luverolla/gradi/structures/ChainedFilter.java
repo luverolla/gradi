@@ -12,6 +12,11 @@ public class ChainedFilter<E extends BaseEntity> implements Filter<E>
 		filters = List.of(fltrs);
 	}
 	
+	public ChainedFilter(List<Filter<E>> fltrs)
+	{
+		filters = fltrs;
+	}
+	
 	@Override
 	public boolean test(E entity)
 	{

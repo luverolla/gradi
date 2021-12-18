@@ -12,6 +12,11 @@ public class ChainedComparator<E extends BaseEntity> implements Comparator<E>
     {
         comparators = List.of(cmpts);
     }
+    
+    public ChainedComparator(List<Comparator<E>> cmpts)
+    {
+    	comparators = cmpts;
+    }
 
     @Override
     public int compare(E o1, E o2)
