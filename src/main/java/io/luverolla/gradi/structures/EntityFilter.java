@@ -1,21 +1,42 @@
 package io.luverolla.gradi.structures;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-public class EntityFilter<E extends BaseEntity>
+/**
+ * Generic entity filter
+ *
+ * Can take in account a value to help filtering.
+ * It can be a single object, or a collection.
+ *
+ * For example, when filtering by a numeric property,
+ * the value can be a list of two element:
+ * an upper and a lower bound, where tested value must be contained into
+ *
+ * @param <E> entity class, derived from {@link BaseEntity}
+ */
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class EntityFilter<E extends BaseEntity, V>
 {
-    private Predicate<E> rule;
+	private V value;
 
-    public boolean test(E entity)
-    {
-        return rule.test(entity);
-    }
+	public void setValue(Object value)
+	{
+		try {
+			this.value = (V) value;
+		}
+		catch (ClassCastException ex) {
+			ex.printStackTrace();
+		}
+	}
 
-    public Set<E> filter(Collection<E> src)
-    {
-        return src.stream().filter(rule).collect(Collectors.toSet());
-    }
+	/**
+	 * Applies filter to a given entity
+	 * @param entity the given entity
+	 * @return `true` if entity matches filter's conditions, `false` otherwise
+	 */
+	public abstract boolean test(E entity);
 }

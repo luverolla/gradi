@@ -1,19 +1,13 @@
 package io.luverolla.gradi.comparators;
 
 import io.luverolla.gradi.entities.User;
+import io.luverolla.gradi.structures.EntityComparator;
 
-import lombok.AllArgsConstructor;
-
-import java.util.Comparator;
-
-@AllArgsConstructor
-public class UserComparatorRole implements Comparator<User>
+public class UserComparatorRole extends EntityComparator<User>
 {
-    private Boolean desc = false;
-
     @Override
-    public int compare(User o1, User o2)
+    public int apply(User o1, User o2)
     {
-        return (desc ? -1 : 1) * o1.getRole().compareTo(o2.getRole());
+        return o1.getRole().compareTo(o2.getRole());
     }
 }

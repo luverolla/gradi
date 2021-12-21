@@ -1,19 +1,15 @@
 package io.luverolla.gradi.filters;
 
-import java.util.List;
+import java.util.Set;
 
 import io.luverolla.gradi.entities.User;
-import io.luverolla.gradi.structures.Filter;
-import lombok.AllArgsConstructor;
+import io.luverolla.gradi.structures.EntityFilter;
 
-@AllArgsConstructor
-public class UserFilterRole implements Filter<User>
+public class UserFilterRole extends EntityFilter<User, Set<User.Role>>
 {
-	private Object value;
-	
 	@Override
 	public boolean test(User u)
 	{
-		return ((List<String>) value).contains(u.getRole().toString());
+		return getValue().contains(u.getRole());
 	}
 }

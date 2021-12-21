@@ -1,25 +1,24 @@
 package io.luverolla.gradi.structures;
 
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
-public class ChainedComparator<E extends BaseEntity> implements Comparator<E>
+/**
+ * Comparator created by combination of other comparators for the same entity type
+ * Sorting way is already taken in account by constituting comparators
+ * @param <E> entity type, derived from {@link BaseEntity}
+ */
+public class ChainedComparator<E extends BaseEntity> extends EntityComparator<E>
 {
-    private List<Comparator<E>> comparators;
-
-    @SafeVarargs
-    public ChainedComparator(Comparator<E>... cmpts)
-    {
-        comparators = List.of(cmpts);
-    }
+    private final Collection<Comparator<E>> comparators;
     
-    public ChainedComparator(List<Comparator<E>> cmpts)
+    public ChainedComparator(Collection<Comparator<E>> cmpts)
     {
     	comparators = cmpts;
     }
 
     @Override
-    public int compare(E o1, E o2)
+    public int apply(E o1, E o2)
     {
         for(Comparator<E> c : comparators)
         {

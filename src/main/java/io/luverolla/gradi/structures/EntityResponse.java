@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -17,12 +18,20 @@ import lombok.NoArgsConstructor;
  * This defines how the JSON REST response for the desidered entity should look
  * For entities in relation, only their URI is shown, the client will then make another REST call to get data.
  *
- * @param <E> generic entity type, must be derived from BaseEntity
+ * @param <E> entity type, derived from {@link BaseEntity}
  */
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class EntityResponse<E extends BaseEntity>
 {
+	/**
+	 * Converts original entity's comparator to entity REST response model type
+	 * This is needed to preserve original order when collecting stream elements into a Set
+	 *
+	 * @see Collectors#toSet()
+	 *
+	 * @param <E> entity type, derived from {@link BaseEntity}
+	 */
 	@AllArgsConstructor
 	private static class MappedComparator<E extends BaseEntity> implements Comparator<EntityResponse<E>>
 	{
@@ -49,24 +58,24 @@ public abstract class EntityResponse<E extends BaseEntity>
 	}
 	
 	/**
-	 * builds model for single entity. Implementation depends on entity's type
+	 * Builds model for single entity. Implementation depends on entity's type
 	 * 
 	 * @param entity object to be converted to REST response
 	 * @return rest response model
 	 */
-	public abstract EntityResponse<E> build(E entity);
+	public abstract EntityResponse<E> build(@NotNull E entity);
 	
 	/**
-	 * Build model for set of an entity set. Relies on abstract build() method
+	 * Builds model for set of an entity set. Relies on abstract {@link EntityResponse#build(BaseEntity)} method
 	 * 
 	 * @param src the set of entities to convert
 	 * @return set of entity REST models
 	 */
-	public Set<EntityResponse<E>> build(String base, SortedSet<E> src)
+	public Set<EntityResponse<E>> build(@NotNull SortedSet<E> src)
 	{
 		MappedComparator<E> cmp = new MappedComparator<E>(src.comparator());
 		
-		return src.stream().map(e -> build(e))
+		return src.stream().map(this::build)
 			.collect(Collectors.toCollection( () -> new TreeSet<>(cmp) ));
 	}
 }

@@ -1,19 +1,13 @@
 package io.luverolla.gradi.comparators;
 
 import io.luverolla.gradi.entities.User;
+import io.luverolla.gradi.structures.EntityComparator;
 
-import lombok.AllArgsConstructor;
-
-import java.util.Comparator;
-
-@AllArgsConstructor
-public class UserComparatorEmail implements Comparator<User>
+public class UserComparatorEmail extends EntityComparator<User>
 {
-    private Boolean desc = false;
-
     @Override
-    public int compare(User o1, User o2)
+    public int apply(User o1, User o2)
     {
-        return (desc ? -1 : 1) * o1.getEmail().compareToIgnoreCase(o2.getEmail());
+        return o1.getEmail().compareToIgnoreCase(o2.getEmail());
     }
 }

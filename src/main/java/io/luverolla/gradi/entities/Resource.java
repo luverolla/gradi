@@ -15,8 +15,14 @@ import java.util.Set;
 @NoArgsConstructor
 public class Resource extends CodedEntity
 {
+    public enum Visibility { PUBLIC, INTERNAL, RESTRICTED };
+
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private Visibility visibility;
 
     @Column(columnDefinition = "text")
     private String description;

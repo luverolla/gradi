@@ -1,18 +1,16 @@
 package io.luverolla.gradi.structures;
 
-import java.util.List;
+import java.util.Collection;
 
-public class ChainedFilter<E extends BaseEntity> implements Filter<E>
+/**
+ * Filter created by combination of other filters for same entity type
+ * @param <E> entity type, derived from {@link BaseEntity}
+ */
+public class ChainedFilter<E extends BaseEntity> extends EntityFilter<E, Object>
 {
-	private List<Filter<E>> filters;
+	private final Collection<EntityFilter<E, ?>> filters;
 	
-	@SafeVarargs
-	public ChainedFilter(Filter<E>... fltrs)
-	{
-		filters = List.of(fltrs);
-	}
-	
-	public ChainedFilter(List<Filter<E>> fltrs)
+	public ChainedFilter(Collection<EntityFilter<E, ?>> fltrs)
 	{
 		filters = fltrs;
 	}
@@ -22,7 +20,7 @@ public class ChainedFilter<E extends BaseEntity> implements Filter<E>
 	{
 		boolean res = true;
 		
-		for(Filter<E> f : filters)
+		for(EntityFilter<E, ?> f : filters)
 			res = res && f.test(entity);
 		
 		return res;

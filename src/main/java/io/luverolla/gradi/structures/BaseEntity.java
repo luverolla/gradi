@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+/**
+ * Minimal entity with an unique generated ID
+ */
 @MappedSuperclass
 @Setter
 @Getter

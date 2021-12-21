@@ -11,6 +11,9 @@ import javax.persistence.MappedSuperclass;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Entity with fields that keep track of creation timestamp and last update timestamp
+ */
 @MappedSuperclass
 @Getter
 @Setter

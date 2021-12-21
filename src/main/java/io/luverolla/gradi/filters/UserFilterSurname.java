@@ -1,17 +1,13 @@
 package io.luverolla.gradi.filters;
 
 import io.luverolla.gradi.entities.User;
-import io.luverolla.gradi.structures.Filter;
-import lombok.AllArgsConstructor;
+import io.luverolla.gradi.structures.EntityFilter;
 
-@AllArgsConstructor
-public class UserFilterSurname implements Filter<User>
+public class UserFilterSurname extends EntityFilter<User, String>
 {
-	private Object value;
-	
 	@Override
 	public boolean test(User u)
 	{
-		return u.getSurname().toLowerCase().contains( ((String) value).toLowerCase() );
+		return u.getSurname().toLowerCase().contains(getValue().toLowerCase());
 	}
 }
