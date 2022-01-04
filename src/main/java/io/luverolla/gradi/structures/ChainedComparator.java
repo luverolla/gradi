@@ -6,9 +6,10 @@ import java.util.Comparator;
 /**
  * Comparator created by combination of other comparators for the same entity type
  * Sorting way is already taken in account by constituting comparators
- * @param <E> entity type, derived from {@link BaseEntity}
+ *
+ * @param <E> entity type
  */
-public class ChainedComparator<E extends BaseEntity> extends EntityComparator<E>
+public class ChainedComparator<E> extends EntityComparator<E>
 {
     private final Collection<Comparator<E>> comparators;
     

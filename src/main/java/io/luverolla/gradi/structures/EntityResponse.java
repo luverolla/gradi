@@ -18,11 +18,11 @@ import lombok.NoArgsConstructor;
  * This defines how the JSON REST response for the desidered entity should look
  * For entities in relation, only their URI is shown, the client will then make another REST call to get data.
  *
- * @param <E> entity type, derived from {@link BaseEntity}
+ * @param <E> entity type
  */
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class EntityResponse<E extends BaseEntity>
+public abstract class EntityResponse<E>
 {
 	/**
 	 * Converts original entity's comparator to entity REST response model type
@@ -30,10 +30,10 @@ public abstract class EntityResponse<E extends BaseEntity>
 	 *
 	 * @see Collectors#toSet()
 	 *
-	 * @param <E> entity type, derived from {@link BaseEntity}
+	 * @param <E> entity type
 	 */
 	@AllArgsConstructor
-	private static class MappedComparator<E extends BaseEntity> implements Comparator<EntityResponse<E>>
+	private static class MappedComparator<E> implements Comparator<EntityResponse<E>>
 	{
 		private final Comparator<? super E> comp;
 		
@@ -64,14 +64,21 @@ public abstract class EntityResponse<E extends BaseEntity>
 	 * @return rest response model
 	 */
 	public abstract EntityResponse<E> build(@NotNull E entity);
+
+	public Set<EntityResponse<E>> build(@NotNull Set<E> src)
+	{
+		return src.stream().map(this::build).collect(Collectors.toSet());
+	}
 	
 	/**
-	 * Builds model for set of an entity set. Relies on abstract {@link EntityResponse#build(BaseEntity)} method
+	 * Builds model for set of an entity ordered set.
+	 *
+	 * <p>Relies on abstract {@link EntityResponse#build(Object)} method, and comparator of given set</p>
 	 * 
 	 * @param src the set of entities to convert
 	 * @return set of entity REST models
 	 */
-	public Set<EntityResponse<E>> build(@NotNull SortedSet<E> src)
+	public SortedSet<EntityResponse<E>> build(@NotNull SortedSet<E> src)
 	{
 		MappedComparator<E> cmp = new MappedComparator<E>(src.comparator());
 		

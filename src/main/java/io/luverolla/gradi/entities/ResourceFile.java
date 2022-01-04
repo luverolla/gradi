@@ -8,7 +8,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import io.luverolla.gradi.structures.BaseEntity;
+import io.luverolla.gradi.structures.CodedEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResourceFile extends BaseEntity
+public class ResourceFile extends CodedEntity
 {
 	@Column(nullable = false, unique = true)
 	private String uri;
@@ -32,7 +33,7 @@ public class ResourceFile extends BaseEntity
 	private String name;
 	
 	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "resource_id", nullable = false)
+    @JoinColumn(name = "resource_code", nullable = false)
     private Resource resource;
 	
 	public String getURI()

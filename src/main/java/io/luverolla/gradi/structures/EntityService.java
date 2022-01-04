@@ -3,8 +3,7 @@ package io.luverolla.gradi.structures;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.sun.istack.NotNull;
-
+import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import io.luverolla.gradi.rest.EntitySetRequest;
@@ -50,27 +49,34 @@ public abstract class EntityService<E extends CodedEntity>
 	protected abstract JpaRepository<E, Long> repo();
 
 	/**
-	 * Gets an instance of the right comparator, from the Comparators map, according to sorting string
+	 * Gets an instance of the right comparator, from the Comparators map, according to sorting map
 	 *
-	 * Sorting string is in the format {$PROPERTY},{ASC|DESC}. Case doesn't matter.
+	 * Map is in <code>(key, value)</code> format, where:
+	 * <ul>
+	 *     <li><code>key</code> is the property's name we want to sort by</li>
+	 *     <li><code>value</code> is the sorting way, and can be <code>asc</code> or <code>desc</code></li>
+	 * </ul>
 	 *
-	 * @param s sorting string
+	 * @param m sorting map
 	 * @return instance of comparator class or <code>null</code> in case of invalid sorting string
 	 */
-	protected Comparator<E> getComparator(@NotNull String s)
+	protected Comparator<E> getComparator(Map.Entry<String, String> m)
     {
+		if(m == null)
+			return null;
+
 		Map<String, EntityComparator<E>> MAP = getComparatorMap();
-		
-        // parameter order is in form '{PROP},{ASC|DESC}'
-        String prop = s.split(",")[0].toLowerCase();
-        String way = s.split(",")[1].toLowerCase();
 
-        // sanity check
-        if(!MAP.containsKey(prop) || !List.of("asc", "desc").contains(way))
-            return null;
+        // check if property name is valid
+        if(!MAP.containsKey(m.getKey()))
+			throw new InvalidPropertyException();
 
-		EntityComparator<E> result = MAP.get(prop);
-		result.setDesc(way.equals("desc"));
+		// if sorting way is invalid, switch to fallback 'asc'
+		if(!List.of("asc", "desc").contains(m.getValue()))
+            m.setValue("asc");
+
+		EntityComparator<E> result = MAP.get(m.getKey());
+		result.setDesc(m.getValue().equals("desc"));
 
         return result;
     }
@@ -87,25 +93,21 @@ public abstract class EntityService<E extends CodedEntity>
 	 * @param m filter rule
 	 * @return instance of filter class or <code>null</code> in case of invalid filter rule
 	 */
-    protected EntityFilter<E, ?> getFilter(Map<String, ?> m)
+    protected EntityFilter<E, ?> getFilter(Map.Entry<String, ?> m)
     {
     	if(m == null)
     		return null;
     	
     	Map<String, EntityFilter<E, ?>> MAP = getFilterMap();
     	
-    	// there is only one entry
-    	String key = m.keySet().iterator().next();
-		Object value = m.get(key);
-    	
         // sanity check
-        if(!MAP.containsKey(key))
-            return null;
+        if(!MAP.containsKey(m.getKey()))
+            throw new InvalidPropertyException();
 
-        EntityFilter<E, ?> result = MAP.get(key);
-		result.setValue(value);
+        EntityFilter<E, ?> result = MAP.get(m.getKey());
+		result.setValue(m.getValue());
 
-        return null;
+        return result;
     }
 
 	/**
@@ -120,9 +122,9 @@ public abstract class EntityService<E extends CodedEntity>
 		if(req.getOrders() == null)
 			return null;
 		
-		req.getOrders().forEach(s ->
+		req.getOrders().forEach((k, v) ->
 		{
-			Comparator<E> cmp = getComparator(s);
+			Comparator<E> cmp = getComparator(Map.entry(k, v));
 			if(cmp != null)
 				res.add(cmp);
 		});
@@ -144,7 +146,7 @@ public abstract class EntityService<E extends CodedEntity>
 		
 		req.getFilters().forEach((k, v) ->
 		{
-			EntityFilter<E, ?> f = getFilter(Map.of(k, v));
+			EntityFilter<E, ?> f = getFilter(Map.entry(k, v));
 			if(f != null)
 				res.add(f);
 		});
@@ -157,7 +159,7 @@ public abstract class EntityService<E extends CodedEntity>
 	 * @param req REST request
 	 * @return entity set
 	 */
-	public Set<E> get(EntitySetRequest<E> req)
+	public SortedSet<E> get(EntitySetRequest<E> req)
 	{
 		Comparator<E> cmpt = chainComparators(req);
 		EntityFilter<E, ?> fltr = chainFilters(req);

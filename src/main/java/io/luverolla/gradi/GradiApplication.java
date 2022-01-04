@@ -10,8 +10,8 @@ import io.luverolla.gradi.entities.User;
 import io.luverolla.gradi.repositories.UserRepository;
 
 @SpringBootApplication
-public class GradiApplication {
-
+public class GradiApplication
+{
     public static void main(String[] args) {
         SpringApplication.run(GradiApplication.class, args);
     }
@@ -22,7 +22,9 @@ public class GradiApplication {
     	return (String[] args) ->
     	{
     		BCryptPasswordEncoder penc = new BCryptPasswordEncoder();
-    		
+
+			// IN PRODUCTION, ADMIN USER WILL BE ADDED VIA SQL SCRIPT
+			// THE OTHER TWO ARE JUST DUMMY USERS FOR TEST PURPOSES
     		if(repo.count() == 0)
     		{
     			User admin = new User();

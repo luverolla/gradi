@@ -14,16 +14,10 @@ import java.time.OffsetDateTime;
 /**
  * Entity with fields that keep track of creation timestamp and last update timestamp
  */
-@MappedSuperclass
-@Getter
-@Setter
-public class DatedEntity extends BaseEntity
+public interface DatedEntity
 {
-    @Column(nullable = false, updatable = false)
-    @CreationTimestamp
-    private OffsetDateTime createdAt;
+    OffsetDateTime getCreatedAt();
+    OffsetDateTime getUpdatedAt();
 
-    @Column(nullable = false)
-    @UpdateTimestamp
-    private OffsetDateTime updatedAt;
+    void setUpdatedAt(OffsetDateTime updatedAt);
 }

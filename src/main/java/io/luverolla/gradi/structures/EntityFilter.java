@@ -3,6 +3,7 @@ package io.luverolla.gradi.structures;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.aspectj.apache.bcel.classfile.Code;
 
 /**
  * Generic entity filter
@@ -14,12 +15,12 @@ import lombok.NoArgsConstructor;
  * the value can be a list of two element:
  * an upper and a lower bound, where tested value must be contained into
  *
- * @param <E> entity class, derived from {@link BaseEntity}
+ * @param <E> entity type
  */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class EntityFilter<E extends BaseEntity, V>
+public abstract class EntityFilter<E, V>
 {
 	private V value;
 

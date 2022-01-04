@@ -42,7 +42,7 @@ public class PublicController
      *
      * @param req object that wraps username and password for authentication
      *
-     * @return a {@link JwtAuthResponse} object in case of success
+     * @return a {@link AuthenticationResponse} object in case of success
      *
      * @throws JsonProcessingException thrown if errors in JSON format are found
      * @throws AuthenticationException thrown if credentials are missing or wrong

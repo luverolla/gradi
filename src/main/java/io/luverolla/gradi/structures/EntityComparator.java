@@ -13,13 +13,13 @@ import java.util.Comparator;
  * Extends standard Java comparator by adding possibility to compare in both ways: ascending or descending.
  * Setting the <code>desc</code> parameter to <code>true</code> allows sorting in descending order
  *
- * @param <E> entity type, derived from {@link BaseEntity}
+ * @param <E> entity type
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class EntityComparator<E extends BaseEntity> implements Comparator<E>
+public abstract class EntityComparator<E> implements Comparator<E>
 {
     private Boolean desc = false;
 

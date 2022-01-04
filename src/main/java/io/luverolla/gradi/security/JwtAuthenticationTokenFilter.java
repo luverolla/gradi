@@ -31,6 +31,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter
     throws ServletException, IOException
     {
         String authToken = request.getHeader(this.tokenHeader);
+
         UserDetails userDetails = null;
         
         if(authToken != null)

@@ -40,6 +40,12 @@ public class User extends CodedEntity
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<ResourcePermission> permissions;
 
+    @OneToMany(mappedBy = "sender", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Set<Message> sentMessages;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Set<Message> receivedMessages;
+
     public String getFullName()
     {
         return name + " " + surname;

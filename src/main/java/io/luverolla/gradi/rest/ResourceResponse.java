@@ -36,7 +36,7 @@ public class ResourceResponse extends EntityResponse<Resource>
 	{
 		private String name;
 		private String type;
-		private Set<String> value;
+		private String value;
 	}
 	
 	private String code;
@@ -67,10 +67,10 @@ public class ResourceResponse extends EntityResponse<Resource>
 		res.setName(name);
 		res.setDescription(description);
 		res.setTypeURI(r.getType().getURI());
-		res.setParentURI(r.getParent() != null ? r.getParent().getURI() : "");
+		res.setParentURI(r.getParent().getURI());
 		
 		res.setChildrenURIs(r.getChildren()
-			.stream().map(e -> e.getURI())
+			.stream().map(Resource::getURI)
 				.collect(Collectors.toSet()));
 		
 		res.setFiles(r.getFiles()
@@ -78,7 +78,7 @@ public class ResourceResponse extends EntityResponse<Resource>
 				.collect(Collectors.toSet()));
 		
 		res.setAttributes(r.getAttributes()
-			.stream().map(e -> new Attribute(e.getProperty().getName(), e.getProperty().getType().toString(), e.getValues()))
+			.stream().map(e -> new Attribute(e.getProperty().getName(), e.getProperty().getType().toString(), e.getValue()))
 				.collect(Collectors.toSet()));
 		
 		res.setPermissions(r.getPermissions()

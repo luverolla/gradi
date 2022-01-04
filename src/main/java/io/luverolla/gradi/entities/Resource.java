@@ -28,11 +28,11 @@ public class Resource extends CodedEntity
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "resource_id", nullable = false)
+    @JoinColumn(name = "resource_code", nullable = false)
     private ResourceType type;
     
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "parent_id")
+    @JoinColumn(name = "parent_resource_code")
     private Resource parent;
     
     @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
@@ -50,5 +50,15 @@ public class Resource extends CodedEntity
     public String getURI()
     {
     	return "/resources/" + getCode();
+    }
+
+    public ResourceAttribute getAttribute(ResourceProperty p)
+    {
+        if(!type.getProperties().contains(p))
+            throw new RuntimeException("Resource type and property don't match");
+
+        return attributes.stream()
+            .filter(a -> a.getProperty().equals(p))
+                .findFirst().orElse(null);
     }
 }

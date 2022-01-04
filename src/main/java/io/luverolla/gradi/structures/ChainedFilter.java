@@ -4,9 +4,10 @@ import java.util.Collection;
 
 /**
  * Filter created by combination of other filters for same entity type
- * @param <E> entity type, derived from {@link BaseEntity}
+ *
+ * @param <E> entity type
  */
-public class ChainedFilter<E extends BaseEntity> extends EntityFilter<E, Object>
+public class ChainedFilter<E> extends EntityFilter<E, Object>
 {
 	private final Collection<EntityFilter<E, ?>> filters;
 	

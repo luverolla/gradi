@@ -3,6 +3,7 @@ package io.luverolla.gradi.services;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import static java.util.Map.entry;
 
@@ -66,9 +67,9 @@ public class UserService extends EntityService<User>
     }
     
     @Override
-    public Set<User> get(EntitySetRequest<User> req)
+    public SortedSet<User> get(EntitySetRequest<User> req)
     {
-    	Set<User> data = super.get(req);
+    	SortedSet<User> data = super.get(req);
     	
     	// we don't want the admin data to be shows as normal users
     	data.removeIf(u -> u.getCode().equals("00000"));
