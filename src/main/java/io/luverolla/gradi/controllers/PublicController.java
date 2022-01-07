@@ -1,7 +1,5 @@
 package io.luverolla.gradi.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import io.luverolla.gradi.rest.AuthenticationRequest;
 import io.luverolla.gradi.rest.AuthenticationResponse;
 import io.luverolla.gradi.security.JwtUserService;
@@ -44,7 +42,6 @@ public class PublicController
      *
      * @return a {@link AuthenticationResponse} object in case of success
      *
-     * @throws JsonProcessingException thrown if errors in JSON format are found
      * @throws AuthenticationException thrown if credentials are missing or wrong
      */
     @PostMapping(value = "/api/public/auth")

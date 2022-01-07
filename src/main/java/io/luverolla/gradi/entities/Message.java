@@ -22,6 +22,11 @@ public class Message extends CodedEntity
 
     public enum Type { GENERAL, INFO, WARNING, SECURITY };
 
+    @Column(nullable = false)
+    @GeneratedValue(generator = "gradi_message_sequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "gradi_message_sequence", sequenceName = "gradi_message_sequence")
+    private Long index;
+
     @Column
     private String subject;
 

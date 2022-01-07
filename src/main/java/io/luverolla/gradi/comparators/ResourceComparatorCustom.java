@@ -2,6 +2,7 @@ package io.luverolla.gradi.comparators;
 
 import io.luverolla.gradi.entities.Resource;
 import io.luverolla.gradi.entities.ResourceProperty;
+import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.exceptions.ResourceTypeMismatchException;
 import io.luverolla.gradi.structures.EntityComparator;
 
@@ -9,6 +10,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Compares resources by custom property
@@ -21,6 +26,9 @@ public class ResourceComparatorCustom<T extends Comparable<T>> extends EntityCom
 
     public ResourceComparatorCustom(ResourceProperty property, Boolean desc)
     {
+        if(property == null)
+            throw new InvalidPropertyException();
+
         this.property = property;
         setDesc(desc);
     }
@@ -40,24 +48,24 @@ public class ResourceComparatorCustom<T extends Comparable<T>> extends EntityCom
                 return attr1.compareToIgnoreCase(attr2);
 
             case FIXED: case RESOURCE:
-                String[] values1 = attr1.split(";");
-                String[] values2 = attr2.split(";");
+                String[] str1 = attr1.toLowerCase().split(";");
+                String[] str2 = attr2.toLowerCase().split(";");
 
-                if(values1.length != values2.length)
-                    return values1.length - values2.length;
+                Arrays.sort(str1);
+                Arrays.sort(str2);
 
-                for(int i = 0; i < values1.length; i++)
-                {
-                    int compared = values1[i].compareToIgnoreCase(values2[i]);
-                    if(compared != 0)
-                        return compared;
-                }
-                return 0;
+                // if the string weren't ordered, equal strings could be signaled as different
+                // example: str1 = "a;b;c", str2 = "b;c;a"
+                // they have all equal elements, but are different if not ordered
+                return String.join(";", str1).compareTo(String.join(";", str2));
 
             case BOOLEAN:
                 return Boolean.valueOf(attr1).compareTo(Boolean.valueOf(attr2));
 
             case NUMERIC:
+                return Double.valueOf(attr1).compareTo(Double.valueOf(attr2));
+
+            case DATETIME:
                 return OffsetDateTime.parse(attr1).compareTo(OffsetDateTime.parse(attr2));
         }
 

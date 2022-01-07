@@ -1,12 +1,16 @@
 package io.luverolla.gradi.entities;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.springframework.hateoas.RepresentationModel;
+
 import javax.persistence.*;
-import java.io.Serializable;
+
 import java.util.Objects;
 
 @Entity
@@ -14,53 +18,23 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourcePermission
+public class ResourcePermission extends RepresentationModel<ResourcePermission>
 {
     public enum Type { READ, WRITE, FULL };
 
-    @Embeddable
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    private static class ResourcePermissionKey implements Serializable
-    {
-        @Column(name = "user_code")
-        String userCode;
+    @JsonIgnore
+    @Id
+    @GeneratedValue(generator = "gradi_resource_permission_sequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "gradi_resource_permission_sequence", sequenceName = "gradi_resource_permission_sequence")
+    private Long index;
 
-        @Column(name = "course_code")
-        String resourceCode;
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if(this == o)
-                return true;
-            if(o == null || getClass() != o.getClass())
-                return false;
-
-            ResourcePermissionKey that = (ResourcePermissionKey) o;
-            return userCode.equals(that.userCode) && resourceCode.equals(that.resourceCode);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return Objects.hash(userCode, resourceCode);
-        }
-    }
-
-    @EmbeddedId
-    ResourcePermissionKey code;
-
+    @JsonIgnoreProperties({"createdAt", "updatedAt", "description", "permissions"})
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "user_code", nullable = false)
-    @MapsId("userCode")
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "resource_code", nullable = false)
-    @MapsId("resourceCode")
     private Resource resource;
 
     @Column
@@ -70,19 +44,19 @@ public class ResourcePermission
     @Override
     public boolean equals(Object o)
     {
-        if(this == o)
-            return true;
-
         if(o == null || getClass() != o.getClass())
             return false;
 
-        ResourcePermission that = (ResourcePermission)o;
-        return code.equals(that.getCode());
+        if(this == o)
+            return true;
+
+        ResourcePermission that = (ResourcePermission) o;
+        return user.equals(that.getUser()) && resource.equals(that.getResource());
     }
 
     @Override
     public int hashCode()
     {
-        return code.hashCode();
+        return Objects.hash(user, resource);
     }
 }

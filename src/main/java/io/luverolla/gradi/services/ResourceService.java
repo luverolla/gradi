@@ -1,15 +1,14 @@
 package io.luverolla.gradi.services;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.entities.ResourceProperty;
-import io.luverolla.gradi.entities.ResourceType;
-import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.repositories.ResourcePropertyRepository;
+import io.luverolla.gradi.rest.EntitySetRequest;
+import io.luverolla.gradi.structures.CodedEntity;
 import io.luverolla.gradi.structures.EntityComparator;
 import io.luverolla.gradi.entities.Resource;
 import io.luverolla.gradi.repositories.ResourceRepository;
@@ -17,31 +16,11 @@ import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.EntityFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ResourceService extends EntityService<Resource>
 {
-	private static final Map<String, EntityComparator<Resource>> CMPTS = Map.ofEntries(
-		Map.entry("code", new EntityComparatorCode<>()),
-		Map.entry("name", new ResourceComparatorName()),
-		Map.entry("createdAt", new EntityComparatorCreatedAt<>()),
-		Map.entry("updatedAt", new EntityComparatorUpdatedAt<>()),
-		Map.entry("type", new ResourceComparatorType()),
-		Map.entry("permissions", new ResourceComparatorPermissions()),
-		Map.entry("visibility", new ResourceComparatorVisibility())
-	);
-
-	private static final Map<String, EntityFilter<Resource, ?>> FLTRS = Map.ofEntries(
-		Map.entry("code", new EntityFilterCode<>()),
-		Map.entry("name", new ResourceFilterName()),
-		Map.entry("createdAt", new EntityFilterCreatedAt<>()),
-		Map.entry("updatedAt", new EntityFilterUpdatedAt<>()),
-		Map.entry("type", new ResourceFilterType()),
-		Map.entry("permissions", new ResourceFilterPermissions())
-	);
-
 	@Autowired
 	private ResourceRepository repo;
 
@@ -51,19 +30,28 @@ public class ResourceService extends EntityService<Resource>
 	@Override
 	protected Map<String, EntityComparator<Resource>> getComparatorMap()
 	{
-		return CMPTS;
+		return Map.ofEntries(
+			Map.entry("code", new EntityComparatorCode<>()),
+			Map.entry("name", new ResourceComparatorName()),
+			Map.entry("createdAt", new EntityComparatorCreatedAt<>()),
+			Map.entry("updatedAt", new EntityComparatorUpdatedAt<>()),
+			Map.entry("type", new ResourceComparatorType()),
+			Map.entry("permissions", new ResourceComparatorPermissions()),
+			Map.entry("visibility", new ResourceComparatorVisibility())
+		);
 	}
 
 	@Override
 	protected Map<String, EntityFilter<Resource, ?>> getFilterMap()
 	{
-		return FLTRS;
-	}
-
-	@Override
-	protected JpaRepository<Resource, Long> repo()
-	{
-		return repo;
+		return Map.ofEntries(
+			Map.entry("code", new EntityFilterCode<>()),
+			Map.entry("name", new ResourceFilterName()),
+			Map.entry("createdAt", new EntityFilterCreatedAt<>()),
+			Map.entry("updatedAt", new EntityFilterUpdatedAt<>()),
+			Map.entry("type", new ResourceFilterType()),
+			Map.entry("permissions", new ResourceFilterPermissions())
+		);
 	}
 
 	/**
@@ -75,12 +63,12 @@ public class ResourceService extends EntityService<Resource>
 	protected EntityFilter<Resource, ?> getFilter(Map.Entry<String, ?> m)
 	{
 		// check if map has any filter for property
-		if(FLTRS.containsKey(m.getKey()))
+		if(getFilterMap().containsKey(m.getKey()))
 			return super.getFilter(m);
 
 		// check if is custom property
-		ResourceProperty prop = getPropertyByName(m.getKey());
-		return new ResourceFilterCustom(prop, m.getValue());
+		ResourceProperty prop = propRepo.findOneByName(m.getKey());
+		return prop == null ? null : new ResourceFilterCustom(prop, m.getValue());
 	}
 
 	/**
@@ -89,43 +77,58 @@ public class ResourceService extends EntityService<Resource>
 	 * @return right Resource filter
 	 */
 	@Override
-	protected EntityComparator<Resource> getComparator(Map.Entry<String, String> m)
+	protected Comparator<Resource> getComparator(Map.Entry<String, String> m)
 	{
 		// check if map has any filter for property
-		if(CMPTS.containsKey(m.getKey()))
-			super.getComparator(m);
+		if(getComparatorMap().containsKey(m.getKey()))
+			return super.getComparator(m);
 
 		// check if is custom property
-		ResourceProperty prop = getPropertyByName(m.getKey());
-		return new ResourceComparatorCustom<>(prop, m.getValue().equals("desc"));
+		ResourceProperty prop = propRepo.findOneByName(m.getKey());
+		return prop == null ? null : new ResourceComparatorCustom<>(prop, m.getValue().equals("desc"));
 	}
 
-	/**
-	 * Gets all resource properties of given resource type
-	 * @param type resource type
-	 * @return resource property set
-	 */
-	private Set<ResourceProperty> getResourceProperties(ResourceType type)
+	public SortedSet<Resource> getResources(EntitySetRequest<Resource> req)
 	{
-		return propRepo.findAll().stream()
-			.filter(p -> p.getResourceType().equals(type))
-				.collect(Collectors.toSet());
+		Integer page = req.getPage(), lim = req.getLimit();
+		boolean paging = page != null && lim != null;
+
+		Collection<Resource> data = paging ? repo.findAll(page, lim) : repo.findAll();
+
+		return data.stream().filter(r -> chainFilters(req).test(r))
+			.collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
 	}
 
-	/**
-	 * Gets resource property by its name
-	 *
-	 * <p>Matching is performed as case-insensitive</p>
-	 *
-	 * @param name property's name
-	 *
-	 * @throws InvalidPropertyException if no property of given name exists
-	 * @return {@link ResourceProperty} object, if it exists
-	 */
-	private ResourceProperty getPropertyByName(String name)
+	public Set<Resource> addResources(Set<Resource> src)
 	{
-		return propRepo.findAll().stream()
-			.filter(p -> p.getName().equalsIgnoreCase(name))
-				.findFirst().orElseThrow(InvalidPropertyException::new);
+		for(Resource r : src)
+		{
+			// the one is to avoid all-zero resource code, that is made to indicate the whole type
+			int num = repo.findAllByType(r.getType()).size() + 1;
+			r.setCode(r.getType().getCode() + CodedEntity.toBase36(5, num));
+		}
+
+		return new HashSet<>(repo.saveAll(src));
+	}
+
+	public Resource updateOneResource(String code, Resource data)
+	{
+		Resource tg = repo.findOne(code);
+
+		if(tg != null)
+		{
+			tg.setName(data.getName());
+			tg.setVisibility(data.getVisibility());
+			tg.setDescription(data.getDescription());
+			tg.setParent(data.getParent());
+			tg.setType(data.getType());
+		}
+
+		return tg;
+	}
+
+	public void deleteOneResource(String code)
+	{
+		repo.deleteOne(code);
 	}
 }

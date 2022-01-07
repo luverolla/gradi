@@ -1,11 +1,8 @@
 package io.luverolla.gradi.structures;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import io.luverolla.gradi.rest.EntitySetRequest;
 
 /**
@@ -42,13 +39,6 @@ public abstract class EntityService<E extends CodedEntity>
 	protected abstract Map<String, EntityFilter<E, ?>> getFilterMap();
 
 	/**
-	 * Gets JPA repository for given entity type
-	 *
-	 * @return JPA repository
-	 */
-	protected abstract JpaRepository<E, Long> repo();
-
-	/**
 	 * Gets an instance of the right comparator, from the Comparators map, according to sorting map
 	 *
 	 * Map is in <code>(key, value)</code> format, where:
@@ -66,7 +56,7 @@ public abstract class EntityService<E extends CodedEntity>
 			return null;
 
 		Map<String, EntityComparator<E>> MAP = getComparatorMap();
-
+		System.out.println(m.getKey());
         // check if property name is valid
         if(!MAP.containsKey(m.getKey()))
 			throw new InvalidPropertyException();
@@ -152,72 +142,5 @@ public abstract class EntityService<E extends CodedEntity>
 		});
 		
 		return new ChainedFilter<E>(res);
-	}
-
-	/**
-	 * Gets a set of entities, sorting and filtering according to REST request
-	 * @param req REST request
-	 * @return entity set
-	 */
-	public SortedSet<E> get(EntitySetRequest<E> req)
-	{
-		Comparator<E> cmpt = chainComparators(req);
-		EntityFilter<E, ?> fltr = chainFilters(req);
-
-		return repo().findAll().stream()
-			.filter(e -> fltr == null || fltr.test(e))
-				.collect(Collectors.toCollection(() -> new TreeSet<>(cmpt)));
-	}
-
-	/**
-	 * Gets a single entity by specifying its code
-	 * @param code the given code
-	 * @return the target entity, or <code>null</code> if not found
-	 */
-	public E get(String code)
-	{
-		return repo().findAll().stream()
-			.filter(e -> e.getCode().equalsIgnoreCase(code))
-			.findFirst().orElse(null);
-	}
-
-	/**
-	 * Adds a set of entities
-	 * @param data the given set
-	 * @return set of saved entities with generated codes
-	 */
-	public Set<E> add(Set<E> data)
-	{
-		return new HashSet<>(repo().saveAll(data));
-	}
-
-	/**
-	 * Update existing entity with new data
-	 * @param code entity's code
-	 * @param data new entity data
-	 * @return updated entity, or <code>null</code> if not found
-	 */
-	public E update(String code, E data)
-	{
-		if(get(code) == null)
-			return null;
-		
-		data.setCode(code);
-		return repo().save(data);
-	}
-
-	/**
-	 * Deletes the entity with given code
-	 *
-	 * If entity is not found, nothing happens, and no warning is sent back
-	 *
-	 * @param code the given code
-	 */
-	public void delete(String code)
-	{
-		E target = get(code);
-		
-		if(target != null)
-			repo().delete(target);
 	}
 }

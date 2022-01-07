@@ -24,8 +24,13 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class ResourceAttribute extends CodedEntity
 {
+    @Column(nullable = false)
+    @GeneratedValue(generator = "gradi_resource_attribute_sequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "gradi_resource_attribute_sequence", sequenceName = "gradi_resource_attribute_sequence")
+    private Long index;
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name="resource_code", nullable = false)
+    @JoinColumn(name = "resource_code", nullable = false)
     private Resource resource;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
@@ -46,10 +51,5 @@ public class ResourceAttribute extends CodedEntity
 
         ResourceAttribute that = (ResourceAttribute) o;
         return resource.equals(that.getResource()) && property.equals(that.getProperty());
-    }
-
-    public int compareTo(ResourceAttribute o)
-    {
-        return value.compareToIgnoreCase(o.getValue());
     }
 }

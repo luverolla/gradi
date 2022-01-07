@@ -1,5 +1,7 @@
 package io.luverolla.gradi.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.luverolla.gradi.structures.CodedEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +21,11 @@ public class User extends CodedEntity
     public enum Role { USER, EDITOR, ADMIN };
 
     @Column(nullable = false)
+    @GeneratedValue(generator = "gradi_user_sequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "gradi_user_sequence", sequenceName = "gradi_user_sequence")
+    private Long index;
+
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
@@ -26,7 +33,8 @@ public class User extends CodedEntity
 
     @Column(nullable = false, unique = true)
     private String email;
-    
+
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -37,6 +45,7 @@ public class User extends CodedEntity
     @Enumerated(EnumType.ORDINAL)
     private Role role;
 
+    @JsonIgnoreProperties({"user", "resource"})
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<ResourcePermission> permissions;
 
@@ -46,18 +55,15 @@ public class User extends CodedEntity
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<Message> receivedMessages;
 
+    @JsonIgnore
     public String getFullName()
     {
         return name + " " + surname;
     }
 
+    @JsonIgnore
     public String getRecipientName()
     {
         return getFullName() + " <" + email + ">";
-    }
-    
-    public String getURI()
-    {
-    	return "/users/" + getCode();
     }
 }

@@ -1,5 +1,6 @@
 package io.luverolla.gradi.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.luverolla.gradi.structures.CodedEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,11 @@ public class ResourceProperty extends CodedEntity
     public enum Type { TEXT, NUMERIC, DATETIME, BOOLEAN, FIXED, RESOURCE };
 
     @Column(nullable = false)
+    @GeneratedValue(generator = "gradi_resource_property_sequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "gradi_resource_property_sequence", sequenceName = "gradi_resource_property_sequence")
+    private Long index;
+
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
@@ -49,6 +55,7 @@ public class ResourceProperty extends CodedEntity
     @JoinColumn(name="resource_type_code", nullable = false)
     private ResourceType resourceType;
 
+    @JsonIgnoreProperties({"property"})
     @OneToMany(mappedBy = "property", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<ResourceAttribute> attributes;
 

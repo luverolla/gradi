@@ -1,12 +1,6 @@
 package io.luverolla.gradi.entities;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.luverolla.gradi.structures.CodedEntity;
 
@@ -23,6 +17,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ResourceFile extends CodedEntity
 {
+	@Column(nullable = false)
+	@GeneratedValue(generator = "gradi_resource_file_sequence", strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(name = "gradi_resource_file_sequence", sequenceName = "gradi_resource_file_sequence")
+	private Long index;
+
 	@Column(nullable = false, unique = true)
 	private String uri;
 	
@@ -35,9 +34,4 @@ public class ResourceFile extends CodedEntity
 	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "resource_code", nullable = false)
     private Resource resource;
-	
-	public String getURI()
-	{
-		return "/files/" + uri;
-	}
 }
