@@ -12,6 +12,9 @@ public interface UserRepository extends JpaRepository<User, String>
     @Query("select u from User u where u.index between ?1 * ?2 and ?1 * ?2 + ?2")
     Set<User> findAll(int page, int limit);
 
+    @Query("select u from User u where u.role = ?1")
+    Set<User> findAllByRole(User.Role role);
+
     @Query("delete from User u where u.code = ?1")
     void deleteOne(String code);
 }

@@ -41,10 +41,6 @@ public class Message extends CodedEntity
     @Column(columnDefinition = "text")
     private String text;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "sender_code", nullable = false)
-    private User sender;
-
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<User> recipients;
 }

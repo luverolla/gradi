@@ -102,11 +102,7 @@ public class ResourceService extends EntityService<Resource>
 	public Set<Resource> addResources(Set<Resource> src)
 	{
 		for(Resource r : src)
-		{
-			// the one is to avoid all-zero resource code, that is made to indicate the whole type
-			int num = repo.findAllByType(r.getType()).size() + 1;
-			r.setCode(r.getType().getCode() + CodedEntity.toBase36(5, num));
-		}
+			r.setCode(CodedEntity.nextCode());
 
 		return new HashSet<>(repo.saveAll(src));
 	}

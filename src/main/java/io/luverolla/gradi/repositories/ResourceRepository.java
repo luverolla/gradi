@@ -33,15 +33,5 @@ public interface ResourceRepository extends JpaRepository<Resource, String>
      */
     @Query("select distinct r from Resource r where r.type = ?1")
     Set<Resource> findAllByType(ResourceType t);
-
-    /**
-     * Gets all resources created by given user
-     * @param u given user
-     * @return set of resources
-     *
-     * @see io.luverolla.gradi.entities.ResourcePermission.Type
-     */
-    @Query("select distinct r from Resource r inner join r.permissions p where p.user = ?1 and p.type = 2")
-    Set<Resource> findAllCreatedBy(User u);
 }
 
