@@ -3,12 +3,10 @@ package io.luverolla.gradi.services;
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.entities.ResourceType;
 import io.luverolla.gradi.filters.*;
-import io.luverolla.gradi.repositories.ResourcePropertyRepository;
 import io.luverolla.gradi.repositories.ResourceTypeRepository;
 import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.structures.CodedEntity;
-import io.luverolla.gradi.structures.EntityComparator;
-import io.luverolla.gradi.structures.EntityFilter;
+import io.luverolla.gradi.structures.Filter;
 import io.luverolla.gradi.structures.EntityService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +22,8 @@ public class ResourceTypeService extends EntityService<ResourceType>
     @Autowired
     private ResourceTypeRepository typeRepo;
 
-    @Autowired
-    private ResourcePropertyRepository propRepo;
-
     @Override
-    protected Map<String, EntityComparator<ResourceType>> getComparatorMap()
+    protected Map<String, Comparator<ResourceType>> getComparatorMap()
     {
         return Map.ofEntries(
             Map.entry("code", new EntityComparatorCode<>()),
@@ -40,18 +35,17 @@ public class ResourceTypeService extends EntityService<ResourceType>
     }
 
     @Override
-    protected Map<String, EntityFilter<ResourceType, ?>> getFilterMap()
+    protected Map<String, Filter<ResourceType, ?>> getFilterMap()
     {
         return Map.ofEntries(
             Map.entry("code", new EntityFilterCode<>()),
             Map.entry("createdAt", new EntityFilterCreatedAt<>()),
             Map.entry("updatedAt", new EntityFilterUpdatedAt<>()),
-            Map.entry("name", new ResourceTypeFilterName()),
-            Map.entry("resources", new ResourceTypeFilterResources())
+            Map.entry("name", new ResourceTypeFilterName())
         );
     }
 
-    public SortedSet<ResourceType> getTypes(EntitySetRequest<ResourceType> req)
+    public SortedSet<ResourceType> getTypes(EntitySetRequest req)
     {
         Stream<ResourceType> data;
         if(req.getPage() != null && req.getLimit() != null)
@@ -68,29 +62,25 @@ public class ResourceTypeService extends EntityService<ResourceType>
         return typeRepo.findOne(code);
     }
 
-    public Set<ResourceType> addTypes(Set<ResourceType> data)
+    public Set<ResourceType> addTypes(Collection<ResourceType> data)
     {
         for(ResourceType t : data)
-        {
-            // 36^4 -> 10000_base36, this will avoid zero-starting codes, which are reserved
-            int num = typeRepo.findAll().size() + (int)Math.pow(36, 4);
-            t.setCode(CodedEntity.toBase36(5, num));
-        }
+            t.setCode(CodedEntity.nextCode());
 
         return new HashSet<>(typeRepo.saveAll(data));
     }
 
     public ResourceType updateType(String code, ResourceType data)
     {
-        ResourceType tg = typeRepo.findOne(code);
+        Optional<ResourceType> tg = typeRepo.findById(code);
+        if(tg.isEmpty())
+            throw new NoSuchElementException();
 
-        if(tg != null)
-        {
-            tg.setName(data.getName());
-            tg.setDescription(data.getDescription());
-        }
+        ResourceType found = tg.get();
+        found.setName(data.getName());
+        found.setDescription(data.getDescription());
 
-        return tg;
+        return found;
     }
 
     public void delete(String code)

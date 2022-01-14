@@ -9,7 +9,7 @@ import java.util.Comparator;
  *
  * @param <E> entity type
  */
-public class ChainedComparator<E> extends EntityComparator<E>
+public class ChainedComparator<E> implements Comparator<E>
 {
     private final Collection<Comparator<E>> comparators;
     
@@ -19,14 +19,12 @@ public class ChainedComparator<E> extends EntityComparator<E>
     }
 
     @Override
-    public int apply(E o1, E o2)
+    public int compare(E o1, E o2)
     {
         for(Comparator<E> c : comparators)
         {
             int res = c.compare(o1, o2);
-
-            if(res != 0)
-                return res;
+            if(res != 0) return res;
         }
 
         return 0;

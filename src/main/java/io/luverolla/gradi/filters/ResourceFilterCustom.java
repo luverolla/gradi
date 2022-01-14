@@ -1,9 +1,8 @@
 package io.luverolla.gradi.filters;
 
 import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.entities.ResourceAttribute;
 import io.luverolla.gradi.entities.ResourceProperty;
-import io.luverolla.gradi.structures.EntityFilter;
+import io.luverolla.gradi.structures.Filter;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +26,7 @@ import java.util.Set;
  */
 @Getter
 @Setter
-public class ResourceFilterCustom extends EntityFilter<Resource, Object>
+public class ResourceFilterCustom extends Filter<Resource, Object>
 {
     private ResourceProperty property;
 
@@ -40,7 +39,7 @@ public class ResourceFilterCustom extends EntityFilter<Resource, Object>
     @Override
     public boolean test(Resource entity)
     {
-        String attr = entity.getAttribute(property).getValue();
+        String attr = entity.getAttribute(property).getValue().trim().toLowerCase();
 
         switch(property.getType())
         {

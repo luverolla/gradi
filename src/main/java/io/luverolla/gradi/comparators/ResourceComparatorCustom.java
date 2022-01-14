@@ -4,43 +4,39 @@ import io.luverolla.gradi.entities.Resource;
 import io.luverolla.gradi.entities.ResourceProperty;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.exceptions.ResourceTypeMismatchException;
-import io.luverolla.gradi.structures.EntityComparator;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.Comparator;
 
 /**
  * Compares resources by custom property
  */
 @Getter
 @Setter
-public class ResourceComparatorCustom<T extends Comparable<T>> extends EntityComparator<Resource>
+public class ResourceComparatorCustom<T extends Comparable<T>> implements Comparator<Resource>
 {
     private final ResourceProperty property;
 
-    public ResourceComparatorCustom(ResourceProperty property, Boolean desc)
+    public ResourceComparatorCustom(ResourceProperty property)
     {
         if(property == null)
             throw new InvalidPropertyException();
 
         this.property = property;
-        setDesc(desc);
     }
 
     @Override
-    public int apply(Resource o1, Resource o2)
+    public int compare(Resource o1, Resource o2)
     {
         if(!o1.getType().equals(o2.getType()))
             throw new ResourceTypeMismatchException();
 
-        String attr1 = o1.getAttribute(property).getValue();
-        String attr2 = o2.getAttribute(property).getValue();
+        String attr1 = o1.getAttribute(property).getValue().trim();
+        String attr2 = o2.getAttribute(property).getValue().trim();
 
         switch(property.getType())
         {

@@ -1,13 +1,14 @@
 package io.luverolla.gradi.comparators;
 
 import io.luverolla.gradi.entities.User;
-import io.luverolla.gradi.structures.EntityComparator;
 
-public class UserComparatorName extends EntityComparator<User>
+import java.util.Comparator;
+
+public class UserComparatorName implements Comparator<User>
 {
     @Override
-    public int apply(User o1, User o2)
+    public int compare(User o1, User o2)
     {
-        return o1.getName().compareToIgnoreCase(o2.getName());
+        return o1.getName().trim().compareToIgnoreCase(o2.getName().trim());
     }
 }

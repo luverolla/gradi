@@ -5,15 +5,15 @@ import java.util.stream.Collectors;
 
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.entities.ResourceProperty;
+import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.repositories.ResourcePropertyRepository;
 import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.structures.CodedEntity;
-import io.luverolla.gradi.structures.EntityComparator;
 import io.luverolla.gradi.entities.Resource;
 import io.luverolla.gradi.repositories.ResourceRepository;
 import io.luverolla.gradi.structures.EntityService;
-import io.luverolla.gradi.structures.EntityFilter;
+import io.luverolla.gradi.structures.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class ResourceService extends EntityService<Resource>
 	private ResourcePropertyRepository propRepo;
 
 	@Override
-	protected Map<String, EntityComparator<Resource>> getComparatorMap()
+	protected Map<String, Comparator<Resource>> getComparatorMap()
 	{
 		return Map.ofEntries(
 			Map.entry("code", new EntityComparatorCode<>()),
@@ -36,13 +36,13 @@ public class ResourceService extends EntityService<Resource>
 			Map.entry("createdAt", new EntityComparatorCreatedAt<>()),
 			Map.entry("updatedAt", new EntityComparatorUpdatedAt<>()),
 			Map.entry("type", new ResourceComparatorType()),
-			Map.entry("permissions", new ResourceComparatorPermissions()),
+			Map.entry("permissions", new ResourceComparatorPermissionsSize()),
 			Map.entry("visibility", new ResourceComparatorVisibility())
 		);
 	}
 
 	@Override
-	protected Map<String, EntityFilter<Resource, ?>> getFilterMap()
+	protected Map<String, Filter<Resource, ?>> getFilterMap()
 	{
 		return Map.ofEntries(
 			Map.entry("code", new EntityFilterCode<>()),
@@ -60,15 +60,15 @@ public class ResourceService extends EntityService<Resource>
 	 * @return right Resource filter
 	 */
 	@Override
-	protected EntityFilter<Resource, ?> getFilter(Map.Entry<String, ?> m)
+	protected Filter<Resource, ?> getFilter(Map.Entry<String, ?> m)
 	{
 		// check if map has any filter for property
 		if(getFilterMap().containsKey(m.getKey()))
 			return super.getFilter(m);
 
 		// check if is custom property
-		ResourceProperty prop = propRepo.findOneByName(m.getKey());
-		return prop == null ? null : new ResourceFilterCustom(prop, m.getValue());
+		Optional<ResourceProperty> prop = propRepo.findOneByName(m.getKey());
+		return prop.isEmpty() ? null : new ResourceFilterCustom(prop.get(), m.getValue());
 	}
 
 	/**
@@ -84,11 +84,15 @@ public class ResourceService extends EntityService<Resource>
 			return super.getComparator(m);
 
 		// check if is custom property
-		ResourceProperty prop = propRepo.findOneByName(m.getKey());
-		return prop == null ? null : new ResourceComparatorCustom<>(prop, m.getValue().equals("desc"));
+		Optional<ResourceProperty> prop = propRepo.findOneByName(m.getKey());
+		if(prop.isEmpty())
+			throw new InvalidPropertyException();
+
+		Comparator<Resource> comp = new ResourceComparatorCustom<>(prop.get());
+		return m.getValue().equals("desc") ? comp.reversed() : comp;
 	}
 
-	public SortedSet<Resource> getResources(EntitySetRequest<Resource> req)
+	public SortedSet<Resource> getResources(EntitySetRequest req)
 	{
 		Integer page = req.getPage(), lim = req.getLimit();
 		boolean paging = page != null && lim != null;
@@ -99,7 +103,13 @@ public class ResourceService extends EntityService<Resource>
 			.collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
 	}
 
-	public Set<Resource> addResources(Set<Resource> src)
+    public Resource getOneResource(String code)
+    {
+        Optional<Resource> test = repo.findById(code);
+        return test.orElseThrow(NoSuchElementException::new);
+    }
+
+	public Set<Resource> addResources(Collection<Resource> src)
 	{
 		for(Resource r : src)
 			r.setCode(CodedEntity.nextCode());

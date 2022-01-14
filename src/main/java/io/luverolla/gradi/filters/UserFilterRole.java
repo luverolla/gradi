@@ -3,9 +3,9 @@ package io.luverolla.gradi.filters;
 import java.util.Set;
 
 import io.luverolla.gradi.entities.User;
-import io.luverolla.gradi.structures.EntityFilter;
+import io.luverolla.gradi.structures.Filter;
 
-public class UserFilterRole extends EntityFilter<User, Set<User.Role>>
+public class UserFilterRole extends Filter<User, Set<User.Role>>
 {
 	@Override
 	public boolean test(User u)

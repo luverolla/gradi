@@ -1,12 +1,12 @@
 package io.luverolla.gradi.filters;
 
 import io.luverolla.gradi.structures.DatedEntity;
-import io.luverolla.gradi.structures.EntityFilter;
+import io.luverolla.gradi.structures.Filter;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
-public class EntityFilterUpdatedAt<E extends DatedEntity> extends EntityFilter<E, List<String>>
+public class EntityFilterUpdatedAt<E extends DatedEntity> extends Filter<E, List<String>>
 {
     @Override
     public boolean test(E e)

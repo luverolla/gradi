@@ -12,17 +12,27 @@ import lombok.Setter;
  *
  * In field {@link EntitySetRequest#orders} the value string is <code>asc</code> or <code>desc</code>
  * In field {@link EntitySetRequest#filters} the value object's actual type depends on filter
- *
- * @param <E> entity type
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EntitySetRequest<E>
+public class EntitySetRequest
 {
     private Integer page;
     private Integer limit;
     private Map<String, String> orders;
     private Map<String, Object> filters;
+
+    /**
+     * Request to get all elements ordered by code ascending
+     * @return {@link EntitySetRequest} object
+     */
+    public static EntitySetRequest simple()
+    {
+        EntitySetRequest req = new EntitySetRequest();
+        req.setOrders(Map.of("code", "asc"));
+
+        return req;
+    }
 }

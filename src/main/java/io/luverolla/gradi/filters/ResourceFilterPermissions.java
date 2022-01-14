@@ -1,16 +1,21 @@
 package io.luverolla.gradi.filters;
 
-import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.entities.ResourcePermission;
-import io.luverolla.gradi.structures.EntityFilter;
-
 import java.util.Set;
 
-public class ResourceFilterPermissions extends EntityFilter<Resource, Set<ResourcePermission>>
+import io.luverolla.gradi.entities.Resource;
+import io.luverolla.gradi.entities.ResourcePermission;
+import io.luverolla.gradi.structures.Filter;
+
+/**
+ * Filter resource by permissions
+ * 
+ * Permission set's element are put in disjuntion
+ */
+public class ResourceFilterPermissions extends Filter<Resource, Set<ResourcePermission>>
 {
     @Override
-    public boolean test(Resource r)
+    public boolean test(Resource entity)
     {
-        return r.getPermissions().stream().anyMatch(getValue()::contains);
+        return getValue().stream().anyMatch(v -> entity.getPermissions().contains(v));
     }
 }

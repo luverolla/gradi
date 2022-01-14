@@ -1,13 +1,14 @@
 package io.luverolla.gradi.comparators;
 
 import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.structures.EntityComparator;
 
-public class ResourceComparatorName extends EntityComparator<Resource>
+import java.util.Comparator;
+
+public class ResourceComparatorName implements Comparator<Resource>
 {
     @Override
-    public int apply(Resource r1, Resource r2)
+    public int compare(Resource r1, Resource r2)
     {
-        return r1.getName().compareToIgnoreCase(r2.getName());
+        return r1.getName().trim().compareToIgnoreCase(r2.getName().trim());
     }
 }

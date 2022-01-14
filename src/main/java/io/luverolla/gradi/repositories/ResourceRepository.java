@@ -2,7 +2,6 @@ package io.luverolla.gradi.repositories;
 
 import io.luverolla.gradi.entities.Resource;
 import io.luverolla.gradi.entities.ResourceType;
-import io.luverolla.gradi.entities.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

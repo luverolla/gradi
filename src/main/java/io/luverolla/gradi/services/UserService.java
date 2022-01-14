@@ -4,18 +4,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.structures.CodedEntity;
-import io.luverolla.gradi.structures.EntityComparator;
 import io.luverolla.gradi.entities.User;
 import io.luverolla.gradi.repositories.UserRepository;
 import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.structures.EntityService;
-import io.luverolla.gradi.structures.EntityFilter;
+import io.luverolla.gradi.structures.Filter;
 
 @Service
 public class UserService extends EntityService<User>
@@ -26,8 +25,11 @@ public class UserService extends EntityService<User>
     @Autowired
     private MailingService mailingService;
 
+    @Autowired
+    private PasswordEncoder pwenc;
+
     @Override
-    protected Map<String, EntityComparator<User>> getComparatorMap()
+    protected Map<String, Comparator<User>> getComparatorMap()
     {
         return Map.ofEntries(
             Map.entry("code", new EntityComparatorCode<>()),
@@ -42,7 +44,7 @@ public class UserService extends EntityService<User>
     }
     
     @Override
-    protected Map<String, EntityFilter<User, ?>> getFilterMap()
+    protected Map<String, Filter<User, ?>> getFilterMap()
     {
     	return Map.ofEntries(
             Map.entry("code", new EntityFilterCode<>()),
@@ -75,10 +77,10 @@ public class UserService extends EntityService<User>
         // without email, user will never know its new new password
         String pswd = bld.toString();
         mailingService.notifyPasswordChange(u, pswd);
-        u.setPassword(new BCryptPasswordEncoder().encode(pswd));
+        u.setPassword(pwenc.encode(pswd));
     }
 
-    public SortedSet<User> getUsers(EntitySetRequest<User> req)
+    public SortedSet<User> getUsers(EntitySetRequest req)
     {
         Integer page = req.getPage(), lim = req.getLimit();
         boolean paging = page != null && lim != null;
@@ -91,7 +93,8 @@ public class UserService extends EntityService<User>
 
     public User getOneUser(String code)
     {
-        return repo.getById(code);
+        Optional<User> user = repo.findById(code);
+        return user.orElseThrow(NoSuchElementException::new);
     }
 
     public User getAdmin()
@@ -99,46 +102,43 @@ public class UserService extends EntityService<User>
         return getOneUser("0000000000");
     }
 
-    public Set<User> add(Set<User> src)
+    public Set<User> add(Collection<User> src)
     {
         for(User u : src)
             u.setCode(CodedEntity.nextCode());
 
-        return src;
+        return new HashSet<>(repo.saveAll(src));
     }
 
     public User updateOneUser(String code, User data)
     {
         Optional<User> tg = repo.findById(code);
+        if(tg.isEmpty())
+            throw new NoSuchElementException();
 
-        if(tg.isPresent())
-        {
-            User found = tg.get();
+        User found = tg.get();
 
-            // mail notification only if visible significant data changes
-            // both old and new email address are contacted
-            if( !data.getFullName().equals(found.getFullName()) ||
-                !data.getEmail().equals(found.getEmail()) ||
-                !data.getRole().equals(found.getRole())
-            )
-                mailingService.notifyUserUpdate(code, found.getEmail(), data);
+        // mail notification only if visible significant data changes
+        // both old and new email address are contacted
+        if( !data.getFullName().equals(found.getFullName()) ||
+            !data.getEmail().equals(found.getEmail()) ||
+            !data.getRole().equals(found.getRole())
+        )
+            mailingService.notifyUserUpdate(code, found.getEmail(), data);
 
-            found.setName(data.getName());
-            found.setSurname(data.getSurname());
-            found.setEmail(data.getEmail());
-            found.setDescription(data.getDescription());
-            found.setPassword(data.getPassword());
-            found.setRole(data.getRole());
-            found.setPermissions(data.getPermissions());
+        found.setName(data.getName());
+        found.setSurname(data.getSurname());
+        found.setEmail(data.getEmail());
+        found.setDescription(data.getDescription());
+        found.setPassword(data.getPassword());
+        found.setRole(data.getRole());
+        found.setPermissions(data.getPermissions());
 
-            return repo.save(found);
-        }
-
-        return null;
+        return repo.save(found);
     }
     
     public void deleteOneUser(String code)
     {
-        repo.deleteOne(code);
+        repo.delete(getOneUser(code));
     }
 }

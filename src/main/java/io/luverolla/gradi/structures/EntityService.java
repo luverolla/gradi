@@ -23,7 +23,7 @@ public abstract class EntityService<E extends CodedEntity>
 	 *
 	 * @return comparators map
 	 */
-	protected abstract Map<String, EntityComparator<E>> getComparatorMap();
+	protected abstract Map<String, Comparator<E>> getComparatorMap();
 
 	/**
 	 * Get filters map for entity type.
@@ -36,7 +36,7 @@ public abstract class EntityService<E extends CodedEntity>
 	 *
 	 * @return filters map
 	 */
-	protected abstract Map<String, EntityFilter<E, ?>> getFilterMap();
+	protected abstract Map<String, Filter<E, ?>> getFilterMap();
 
 	/**
 	 * Gets an instance of the right comparator, from the Comparators map, according to sorting map
@@ -55,20 +55,14 @@ public abstract class EntityService<E extends CodedEntity>
 		if(m == null)
 			return null;
 
-		Map<String, EntityComparator<E>> MAP = getComparatorMap();
-		System.out.println(m.getKey());
+		Map<String, Comparator<E>> MAP = getComparatorMap();
+
         // check if property name is valid
         if(!MAP.containsKey(m.getKey()))
 			throw new InvalidPropertyException();
 
-		// if sorting way is invalid, switch to fallback 'asc'
-		if(!List.of("asc", "desc").contains(m.getValue()))
-            m.setValue("asc");
-
-		EntityComparator<E> result = MAP.get(m.getKey());
-		result.setDesc(m.getValue().equals("desc"));
-
-        return result;
+		Comparator<E> result = MAP.get(m.getKey());
+		return m.getValue().equals("desc") ? result.reversed() : result;
     }
 
 	/**
@@ -83,18 +77,18 @@ public abstract class EntityService<E extends CodedEntity>
 	 * @param m filter rule
 	 * @return instance of filter class or <code>null</code> in case of invalid filter rule
 	 */
-    protected EntityFilter<E, ?> getFilter(Map.Entry<String, ?> m)
+    protected Filter<E, ?> getFilter(Map.Entry<String, ?> m)
     {
     	if(m == null)
     		return null;
     	
-    	Map<String, EntityFilter<E, ?>> MAP = getFilterMap();
+    	Map<String, Filter<E, ?>> MAP = getFilterMap();
     	
         // sanity check
         if(!MAP.containsKey(m.getKey()))
             throw new InvalidPropertyException();
 
-        EntityFilter<E, ?> result = MAP.get(m.getKey());
+        Filter<E, ?> result = MAP.get(m.getKey());
 		result.setValue(m.getValue());
 
         return result;
@@ -105,7 +99,7 @@ public abstract class EntityService<E extends CodedEntity>
 	 * @param req REST request
 	 * @return chained comparator class, or <code>null</code> in case of invalid request
 	 */
-	protected ChainedComparator<E> chainComparators(EntitySetRequest<E> req)
+	protected ChainedComparator<E> chainComparators(EntitySetRequest req)
 	{
 		List<Comparator<E>> res = new ArrayList<>();
 		
@@ -127,16 +121,16 @@ public abstract class EntityService<E extends CodedEntity>
 	 * @param req REST request
 	 * @return chained filter class, or <code>null</code> in case of invalid request
 	 */
-	protected ChainedFilter<E> chainFilters(EntitySetRequest<E> req)
+	protected ChainedFilter<E> chainFilters(EntitySetRequest req)
 	{
-		List<EntityFilter<E, ?>> res = new ArrayList<>();
+		List<Filter<E, ?>> res = new ArrayList<>();
 		
 		if(req.getFilters() == null)
 			return null;
 		
 		req.getFilters().forEach((k, v) ->
 		{
-			EntityFilter<E, ?> f = getFilter(Map.entry(k, v));
+			Filter<E, ?> f = getFilter(Map.entry(k, v));
 			if(f != null)
 				res.add(f);
 		});

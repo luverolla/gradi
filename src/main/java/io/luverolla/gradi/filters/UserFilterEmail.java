@@ -1,13 +1,13 @@
 package io.luverolla.gradi.filters;
 
 import io.luverolla.gradi.entities.User;
-import io.luverolla.gradi.structures.EntityFilter;
+import io.luverolla.gradi.structures.Filter;
 
-public class UserFilterEmail extends EntityFilter<User, String>
+public class UserFilterEmail extends Filter<User, String>
 {
 	@Override
 	public boolean test(User u)
 	{
-		return u.getEmail().toLowerCase().contains(getValue().toLowerCase());
+		return u.getEmail().trim().toLowerCase().contains(getValue().trim().toLowerCase());
 	}
 }

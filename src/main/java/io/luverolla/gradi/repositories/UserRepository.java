@@ -14,7 +14,4 @@ public interface UserRepository extends JpaRepository<User, String>
 
     @Query("select u from User u where u.role = ?1")
     Set<User> findAllByRole(User.Role role);
-
-    @Query("delete from User u where u.code = ?1")
-    void deleteOne(String code);
 }

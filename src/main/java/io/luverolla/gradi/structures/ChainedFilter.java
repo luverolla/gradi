@@ -7,11 +7,11 @@ import java.util.Collection;
  *
  * @param <E> entity type
  */
-public class ChainedFilter<E> extends EntityFilter<E, Object>
+public class ChainedFilter<E> extends Filter<E, Object>
 {
-	private final Collection<EntityFilter<E, ?>> filters;
+	private final Collection<Filter<E, ?>> filters;
 	
-	public ChainedFilter(Collection<EntityFilter<E, ?>> fltrs)
+	public ChainedFilter(Collection<Filter<E, ?>> fltrs)
 	{
 		filters = fltrs;
 	}
@@ -21,7 +21,7 @@ public class ChainedFilter<E> extends EntityFilter<E, Object>
 	{
 		boolean res = true;
 		
-		for(EntityFilter<E, ?> f : filters)
+		for(Filter<E, ?> f : filters)
 			res = res && f.test(entity);
 		
 		return res;

@@ -51,7 +51,7 @@ public class ResourcePermission extends RepresentationModel<ResourcePermission>
             return true;
 
         ResourcePermission that = (ResourcePermission) o;
-        return user.equals(that.getUser()) && resource.equals(that.getResource());
+        return user.equals(that.getUser()) && resource.equals(that.getResource()) && type.equals(that.getType());
     }
 
     @Override

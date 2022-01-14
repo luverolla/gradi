@@ -1,12 +1,13 @@
 package io.luverolla.gradi.comparators;
 
 import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.structures.EntityComparator;
 
-public class ResourceComparatorVisibility extends EntityComparator<Resource>
+import java.util.Comparator;
+
+public class ResourceComparatorVisibility implements Comparator<Resource>
 {
     @Override
-    public int apply(Resource r1, Resource r2)
+    public int compare(Resource r1, Resource r2)
     {
         return r1.getVisibility().compareTo(r2.getVisibility());
     }
