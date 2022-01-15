@@ -5,28 +5,13 @@ import io.luverolla.gradi.structures.CodedEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import java.util.Set;
 
 /**
  * Custom resource property of given backing class. This last one MUST be comparable
- *
- * <p>Resource properties can be dynamically created with custom types and related backing classes:</p>
- * <ul>
- *     <li><code>TEXT</code> is used for string-like properties. Backed by {@link String} class</li>
- *     <li><code>NUMERIC</code> is used for numeric properties. Backed by {@link Float} class, even if integer</li>
- *     <li><code>DATETIME</code> is used for dates and times. Backed by {@link java.time.OffsetDateTime} class</li>
- *     <li><code>BOOLEAN</code> is used for boolean-like properties. Backed by {@link Boolean} class</li>
- *     <li>
- *         <code>FIXED</code> is used for properties that accept a set of fixed values
- *         (as happens in HTML <code>select</code> menus. Backed by {@link Set<String>} class
- *     </li>
- *     <li>
- *         <code>RESOURCE</code> is used for properties that accept a set of {@link Resource} URIs.
- *         Backed by {@link Set<String>} class
- *     </li>
- * </ul>
  *
  * @see ResourceAttribute
  */
@@ -35,16 +20,21 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourceProperty extends CodedEntity
+public class ResourceProperty extends RepresentationModel<ResourceProperty>
 {
-    public enum Type { TEXT, NUMERIC, DATETIME, BOOLEAN, FIXED, RESOURCE };
+    /**
+     * Property's value type
+     *
+     * <ul>
+     *     <li><code>STRING</code> is for single-line, plain-text values, while <code>TEXT</code> is for formatted multiline text</li>
+     *     <li><code>FIXED</code> is for enum-like values, or, for example, string values that comes from an HTML select</li>
+     *     <li><code>RESOURCE</code> is for internal reference with resources' URIs</li>
+     *     <li><code>NUMERIC</code></li>
+     * </ul>
+     */
+    public enum Type { STRING, TEXT, NUMERIC, DATETIME, BOOLEAN, FIXED, RESOURCE };
 
-    @Column(nullable = false)
-    @GeneratedValue(generator = "gradi_resource_property_sequence", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "gradi_resource_property_sequence", sequenceName = "gradi_resource_property_sequence")
-    private Long index;
-
-    @Column(nullable = false)
+    @Id
     private String name;
 
     @Column(nullable = false)

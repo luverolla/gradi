@@ -1,26 +1,34 @@
 package io.luverolla.gradi.services;
 
 import io.luverolla.gradi.comparators.*;
+import io.luverolla.gradi.entities.ResourceProperty;
 import io.luverolla.gradi.entities.ResourceType;
 import io.luverolla.gradi.filters.*;
+import io.luverolla.gradi.repositories.ResourcePropertyRepository;
 import io.luverolla.gradi.repositories.ResourceTypeRepository;
-import io.luverolla.gradi.rest.EntitySetRequest;
-import io.luverolla.gradi.structures.CodedEntity;
 import io.luverolla.gradi.structures.Filter;
 import io.luverolla.gradi.structures.EntityService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class ResourceTypeService extends EntityService<ResourceType>
 {
     @Autowired
     private ResourceTypeRepository typeRepo;
+
+    @Autowired
+    private ResourcePropertyRepository propRepo;
+
+    @Override
+    public PagingAndSortingRepository<ResourceType, String> repo()
+    {
+        return typeRepo;
+    }
 
     @Override
     protected Map<String, Comparator<ResourceType>> getComparatorMap()
@@ -45,32 +53,8 @@ public class ResourceTypeService extends EntityService<ResourceType>
         );
     }
 
-    public SortedSet<ResourceType> getTypes(EntitySetRequest req)
-    {
-        Stream<ResourceType> data;
-        if(req.getPage() != null && req.getLimit() != null)
-            data = typeRepo.findAll(req.getPage(), req.getLimit()).stream();
-        else
-            data = typeRepo.findAll().stream();
-
-        return data.filter(e -> chainFilters(req).test(e))
-            .collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
-    }
-
-    public ResourceType getOneType(String code)
-    {
-        return typeRepo.findOne(code);
-    }
-
-    public Set<ResourceType> addTypes(Collection<ResourceType> data)
-    {
-        for(ResourceType t : data)
-            t.setCode(CodedEntity.nextCode());
-
-        return new HashSet<>(typeRepo.saveAll(data));
-    }
-
-    public ResourceType updateType(String code, ResourceType data)
+    @Override
+    public ResourceType update(String code, ResourceType data)
     {
         Optional<ResourceType> tg = typeRepo.findById(code);
         if(tg.isEmpty())
@@ -83,8 +67,77 @@ public class ResourceTypeService extends EntityService<ResourceType>
         return found;
     }
 
-    public void delete(String code)
+    /**
+     * Retrieves single resource property
+     *
+     * @param typeCode resource type's code
+     * @param propName property's name
+     *
+     * @throws NoSuchElementException if type or property don't exist
+     * @return {@link ResourceProperty} object, if it exists
+     */
+    public ResourceProperty getProperty(String typeCode, String propName)
     {
-        typeRepo.deleteOne(code);
+        return get(typeCode).getProperties().stream()
+            .filter(p -> p.getName().equalsIgnoreCase(typeCode + "#" + propName))
+                .findFirst().orElseThrow(NoSuchElementException::new);
+    }
+
+    /**
+     * Adds properties to resource type
+     *
+     * Properties are given a unique name with format: <code>{TYPE_CODE}#{PROPERTY_NAME}</code>
+     *
+     * @param typeCode given resource type's code
+     * @param data collection of resource property
+     *
+     * @throws NoSuchElementException if resource type doesn't exist
+     * @return saved objects, with unique names
+     */
+    public Set<ResourceProperty> addProperties(String typeCode, Collection<ResourceProperty> data)
+    {
+        ResourceType found = get(typeCode);
+
+        for(ResourceProperty p : data)
+        {
+            p.setResourceType(found);
+            p.setName(typeCode + "#" + p.getName());
+        }
+
+        return (Set<ResourceProperty>) propRepo.saveAll(data);
+    }
+
+    /**
+     * Updates resource property with new data
+     *
+     * Only {@link ResourceProperty#Type} is updated
+     *
+     * @param typeCode resource type's code
+     * @param propName property's name
+     * @param data new property object
+     *
+     * @throws NoSuchElementException if resource type or property don't exist
+     * @return updated property object, no errors occur
+     */
+    public ResourceProperty updateProperty(String typeCode, String propName, ResourceProperty data)
+    {
+        // once set, name and resource type cannot be altered
+        ResourceProperty found = getProperty(typeCode, propName);
+        found.setType(data.getType());
+
+        return found;
+    }
+
+    /**
+     * Deletes resource property
+     *
+     * @param typeCode resource type's code
+     * @param propName property's name
+     *
+     * @throws NoSuchElementException if type or property don't exist
+     */
+    public void deleteProperty(String typeCode, String propName)
+    {
+        propRepo.delete(getProperty(typeCode, propName));
     }
 }

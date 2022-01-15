@@ -1,6 +1,7 @@
 package io.luverolla.gradi.comparators;
 
 import io.luverolla.gradi.structures.DatedEntity;
+
 import java.util.Comparator;
 
 public class EntityComparatorCreatedAt<E extends DatedEntity> implements Comparator<E>

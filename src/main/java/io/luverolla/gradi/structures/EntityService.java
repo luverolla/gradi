@@ -1,9 +1,14 @@
 package io.luverolla.gradi.structures;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
+import io.luverolla.gradi.exceptions.NoAvailableCodeException;
 import io.luverolla.gradi.rest.EntitySetRequest;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * Generic service class with essential CRUD and utility methods
@@ -12,6 +17,50 @@ import io.luverolla.gradi.rest.EntitySetRequest;
  */
 public abstract class EntityService<E extends CodedEntity>
 {
+	/**
+	 * UNIX timestamp (in milliseconds) of 2000-01-01T00:00:00+00:00
+	 */
+	public static final long YEAR2000 = 946684800000L;
+
+	/**
+	 * Converts number to base36 with up to <code>chars</code> digits
+	 *
+	 * Base36 extends Base16 adding the other 20 latin letters
+	 *
+	 * @param chars maximum number of digits
+	 * @param num number to convert
+	 *
+	 * @return converted string
+	 * @throws NoAvailableCodeException if converted number doesn't fit in given number of digits
+	 */
+	private static String toBase36(int chars, long num)
+	{
+		if(num >= Math.pow(36, chars))
+			throw new NoAvailableCodeException();
+
+		String base36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		StringBuilder bld = new StringBuilder(new String(new char[chars]).replace('\0', '0'));
+
+		for(int i = chars - 1; i >= 0; i--)
+		{
+			if(num == 0) break;
+			bld.setCharAt(i, base36.charAt( (int) (num % 36)) );
+			num /= 36;
+		}
+
+		return bld.toString();
+	}
+
+	/**
+	 * Gets next unique code for entity
+	 *
+	 * @return unique code
+	 */
+	public static String nextCode()
+	{
+		return toBase36(10, System.currentTimeMillis() - YEAR2000);
+	}
+
 	/**
 	 * Get comparators map for entity type.
 	 *
@@ -37,6 +86,8 @@ public abstract class EntityService<E extends CodedEntity>
 	 * @return filters map
 	 */
 	protected abstract Map<String, Filter<E, ?>> getFilterMap();
+
+	protected abstract PagingAndSortingRepository<E, String> repo();
 
 	/**
 	 * Gets an instance of the right comparator, from the Comparators map, according to sorting map
@@ -136,5 +187,76 @@ public abstract class EntityService<E extends CodedEntity>
 		});
 		
 		return new ChainedFilter<E>(res);
+	}
+
+	/**
+	 * Get collection of data according to request
+	 *
+	 * Data is sorted, filtered and paged according to given {@link EntitySetRequest} object
+	 *
+	 * @param req given request object
+	 *
+	 * @return set of data
+	 */
+	public SortedSet<E> get(EntitySetRequest req)
+	{
+		return repo().findAll(PageRequest.of(req.getPage(), req.getLimit()))
+			.filter(r -> chainFilters(req).test(r))
+				.stream().collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
+	}
+
+	/**
+	 * Retrieves single entity by its code
+	 *
+	 * @param code given entity's code
+	 *
+	 * @throws NoSuchElementException if entity doesn't exist
+	 * @return entity object, if it exists
+	 */
+	public E get(String code)
+	{
+		return repo().findById(code).orElseThrow(NoSuchElementException::new);
+	}
+
+	/**
+	 * Adds collection of entities
+	 *
+	 * Each entity gets an unique code assigned
+	 *
+	 * @param data data to add
+	 *
+	 * @return saved objects, with unique codes
+	 *
+	 * @see EntityService#nextCode()
+	 */
+	public Set<E> add(Collection<E> data)
+	{
+		for(E e : data) e.setCode(nextCode());
+		return (Set<E>) repo().saveAll(data);
+	}
+
+	/**
+	 * Updates given entity with new data
+	 *
+	 * Data to update depends on entity type, so this needs to be implemented
+	 *
+	 * @param code given entity's code
+	 * @param data new entity data
+	 *
+	 * @throws NoSuchElementException if entity doesn't exist
+	 * @return updated entity, if it exists
+	 */
+	public abstract E update(String code, E data) throws NoSuchElementException;
+
+	/**
+	 * Deletes a given entity
+	 *
+	 * @param code given entity's code
+	 *
+	 * @throws NoSuchElementException if entity doesn't exist
+	 */
+	public void delete(String code)
+	{
+		repo().delete(get(code));
 	}
 }

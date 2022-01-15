@@ -2,7 +2,9 @@ package io.luverolla.gradi.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import io.luverolla.gradi.structures.CodedEntity;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,11 +21,6 @@ import java.util.Set;
 public class User extends CodedEntity
 {
     public enum Role { USER, EDITOR, ADMIN };
-
-    @Column(nullable = false)
-    @GeneratedValue(generator = "gradi_user_sequence", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "gradi_user_sequence", sequenceName = "gradi_user_sequence")
-    private Long index;
 
     @Column(nullable = false)
     private String name;

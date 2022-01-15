@@ -15,22 +15,26 @@ import io.luverolla.gradi.filters.MessageFilterVisibility;
 import io.luverolla.gradi.filters.MessageFilterType;
 import io.luverolla.gradi.filters.MessageFilterText;
 import io.luverolla.gradi.repositories.MessageRepository;
-import io.luverolla.gradi.rest.EntitySetRequest;
-import io.luverolla.gradi.structures.CodedEntity;
 import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class MessageService extends EntityService<Message>
 {
     @Autowired
     private MessageRepository repo;
+
+    @Override
+    public PagingAndSortingRepository<Message, String> repo()
+    {
+        return repo;
+    }
 
     @Override
     protected Map<String, Comparator<Message>> getComparatorMap()
@@ -59,32 +63,8 @@ public class MessageService extends EntityService<Message>
         );
     }
 
-    public SortedSet<Message> getMessages(EntitySetRequest req)
-    {
-        Integer page = req.getPage(), lim = req.getLimit();
-        boolean paging = page != null && lim != null;
-
-        Collection<Message> data = paging ? repo.findAll(page, lim) : repo.findAll();
-
-        return data.stream().filter(r -> chainFilters(req).test(r))
-            .collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
-    }
-
-    public Message getOneMessage(String code)
-    {
-        Optional<Message> Message = repo.findById(code);
-        return Message.orElseThrow(NoSuchElementException::new);
-    }
-
-    public Set<Message> add(Collection<Message> src)
-    {
-        for(Message u : src)
-            u.setCode(CodedEntity.nextCode());
-
-        return new HashSet<>(repo.saveAll(src));
-    }
-
-    public Message updateOneMessage(String code, Message data)
+    @Override
+    public Message update(String code, Message data)
     {
         Optional<Message> tg = repo.findById(code);
         if(tg.isEmpty())
@@ -98,10 +78,5 @@ public class MessageService extends EntityService<Message>
         found.setText(data.getText());
 
         return repo.save(found);
-    }
-    
-    public void deleteOneMessage(String code)
-    {
-        repo.delete(getOneMessage(code));
     }
 }

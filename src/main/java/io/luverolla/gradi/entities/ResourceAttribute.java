@@ -24,10 +24,11 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class ResourceAttribute extends CodedEntity
 {
-    @Column(nullable = false)
-    @GeneratedValue(generator = "gradi_resource_attribute_sequence", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "gradi_resource_attribute_sequence", sequenceName = "gradi_resource_attribute_sequence")
-    private Long index;
+    @Id
+    private String name;
+
+    @Column(columnDefinition = "text")
+    private String value;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "resource_code", nullable = false)
@@ -36,9 +37,6 @@ public class ResourceAttribute extends CodedEntity
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name = "resource_property_code", nullable = false)
     private ResourceProperty property;
-
-    @Column
-    private String value;
 
     @Override
     public boolean equals(Object o)
@@ -51,5 +49,17 @@ public class ResourceAttribute extends CodedEntity
 
         ResourceAttribute that = (ResourceAttribute) o;
         return resource.equals(that.getResource()) && property.equals(that.getProperty());
+    }
+
+    /**
+     * Tells if resource attribute may belog to a given resource.
+     *
+     * @param r the given resource
+     *
+     * @return boolean
+     */
+    public boolean belongsTo(Resource r)
+    {
+        return property.getResourceType().equals(r.getType());
     }
 }

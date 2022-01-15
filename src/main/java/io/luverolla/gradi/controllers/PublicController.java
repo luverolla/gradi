@@ -15,12 +15,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/public")
 public class PublicController
 {
     @Value("${jwt.header}")
@@ -44,7 +42,7 @@ public class PublicController
      *
      * @throws AuthenticationException thrown if credentials are missing or wrong
      */
-    @PostMapping(value = "/api/public/auth")
+    @PostMapping("/auth")
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest req)
     { 
     	String token;
@@ -68,7 +66,7 @@ public class PublicController
         return ResponseEntity.ok(res);
     }
     
-    @GetMapping("/api/public/test")
+    @GetMapping("/self-test")
     public ResponseEntity<?> __selftest()
     {
     	return ResponseEntity.ok(Map.of("result", "success"));

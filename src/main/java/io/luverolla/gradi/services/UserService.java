@@ -1,18 +1,16 @@
 package io.luverolla.gradi.services;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.filters.*;
-import io.luverolla.gradi.structures.CodedEntity;
 import io.luverolla.gradi.entities.User;
 import io.luverolla.gradi.repositories.UserRepository;
-import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.Filter;
 
@@ -27,6 +25,12 @@ public class UserService extends EntityService<User>
 
     @Autowired
     private PasswordEncoder pwenc;
+
+    @Override
+    public PagingAndSortingRepository<User, String> repo()
+    {
+        return repo;
+    }
 
     @Override
     protected Map<String, Comparator<User>> getComparatorMap()
@@ -57,60 +61,8 @@ public class UserService extends EntityService<User>
         );
     }
 
-    public Set<User> getAllUsers()
-    {
-        return new HashSet<>(repo.findAll());
-    }
-
-    public Set<User> getUsersByRole(User.Role role)
-    {
-        return repo.findAllByRole(role);
-    }
-
-    public void passwordReset(User u)
-    {
-        StringBuilder bld = new StringBuilder(16);
-        new Random().ints().limit(16).forEach(bld::append);
-
-        // actually set password AFTER sending email, so,
-        // if email send goes into error, password doesn't change
-        // without email, user will never know its new new password
-        String pswd = bld.toString();
-        mailingService.notifyPasswordChange(u, pswd);
-        u.setPassword(pwenc.encode(pswd));
-    }
-
-    public SortedSet<User> getUsers(EntitySetRequest req)
-    {
-        Integer page = req.getPage(), lim = req.getLimit();
-        boolean paging = page != null && lim != null;
-
-        Collection<User> data = paging ? repo.findAll(page, lim) : repo.findAll();
-
-        return data.stream().filter(r -> chainFilters(req).test(r))
-            .collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
-    }
-
-    public User getOneUser(String code)
-    {
-        Optional<User> user = repo.findById(code);
-        return user.orElseThrow(NoSuchElementException::new);
-    }
-
-    public User getAdmin()
-    {
-        return getOneUser("0000000000");
-    }
-
-    public Set<User> add(Collection<User> src)
-    {
-        for(User u : src)
-            u.setCode(CodedEntity.nextCode());
-
-        return new HashSet<>(repo.saveAll(src));
-    }
-
-    public User updateOneUser(String code, User data)
+    @Override
+    public User update(String code, User data)
     {
         Optional<User> tg = repo.findById(code);
         if(tg.isEmpty())
@@ -121,8 +73,8 @@ public class UserService extends EntityService<User>
         // mail notification only if visible significant data changes
         // both old and new email address are contacted
         if( !data.getFullName().equals(found.getFullName()) ||
-            !data.getEmail().equals(found.getEmail()) ||
-            !data.getRole().equals(found.getRole())
+                !data.getEmail().equals(found.getEmail()) ||
+                !data.getRole().equals(found.getRole())
         )
             mailingService.notifyUserUpdate(code, found.getEmail(), data);
 
@@ -136,9 +88,17 @@ public class UserService extends EntityService<User>
 
         return repo.save(found);
     }
-    
-    public void deleteOneUser(String code)
+
+    public void passwordReset(User u)
     {
-        repo.delete(getOneUser(code));
+        StringBuilder bld = new StringBuilder(16);
+        new Random().ints().limit(16).forEach(bld::append);
+
+        // actually set password AFTER sending email, so,
+        // if email send goes into error, password doesn't change
+        // without email, user will never know its new new password
+        String pswd = bld.toString();
+        mailingService.notifyPasswordChange(u, pswd);
+        u.setPassword(pwenc.encode(pswd));
     }
 }

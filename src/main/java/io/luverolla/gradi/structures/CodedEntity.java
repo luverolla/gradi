@@ -1,7 +1,5 @@
 package io.luverolla.gradi.structures;
 
-import io.luverolla.gradi.exceptions.NoAvailableCodeException;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,50 +22,6 @@ import java.time.OffsetDateTime;
 @Setter
 public class CodedEntity extends RepresentationModel<CodedEntity> implements DatedEntity, Comparable<CodedEntity>
 {
-    /**
-     * UNIX timestamp (in milliseconds) of 2000-01-01T00:00:00+00:00
-     */
-    public static final long YEAR2000 = 946684800000L;
-
-    /**
-     * Converts number to base36 with up to <code>chars</code> digits
-     *
-     * Base36 extends Base16 adding the other 20 latin letters
-     *
-     * @param chars maximum number of digits
-     * @param num number to convert
-     *
-     * @return converted string
-     * @throws NoAvailableCodeException if converted number doesn't fit in given number of digits
-     */
-    public static String toBase36(int chars, long num)
-    {
-        if(num >= Math.pow(36, chars))
-            throw new NoAvailableCodeException();
-
-        String base36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        StringBuilder bld = new StringBuilder(new String(new char[chars]).replace('\0', '0'));
-
-        for(int i = chars - 1; i >= 0; i--)
-        {
-            if(num == 0) break;
-            bld.setCharAt(i, base36.charAt( (int) (num % 36)) );
-            num /= 36;
-        }
-
-        return bld.toString();
-    }
-
-    /**
-     * Gets next unique code for entity
-     *
-     * @return unique code
-     */
-    public static String nextCode()
-    {
-        return toBase36(10, System.currentTimeMillis() - YEAR2000);
-    }
-
     @Id
     @Column(nullable = false, unique = true, length = 10)
     private String code;

@@ -1,8 +1,6 @@
 package io.luverolla.gradi.controllers;
 
-import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.entities.ResourceType;
-import io.luverolla.gradi.entities.User;
+import io.luverolla.gradi.entities.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.services.ResourceService;
@@ -12,10 +10,16 @@ import io.luverolla.gradi.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -43,7 +47,7 @@ public class AdminController
         if(req == null)
             return ResponseEntity.badRequest().build();
 
-        SortedSet<User> data = userService.getUsers(req);
+        SortedSet<User> data = userService.get(req);
         for(User u : data)
             u.add(linkTo(methodOn(AdminController.class).getUser(u.getCode())).withSelfRel());
 
@@ -54,15 +58,15 @@ public class AdminController
     @GetMapping("/users/{code}")
     public ResponseEntity<?> getUser(@PathVariable("code") String code)
     {
-        User found;
         try {
-            found = userService.getOneUser(code);
-        } catch (NoSuchElementException e) {
+            User found = userService.get(code);
+
+            Link self = linkTo(methodOn(AdminController.class).getUser(code)).withSelfRel();
+            return ResponseEntity.ok(found.add(self));
+        }
+        catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
-
-        Link self = linkTo(methodOn(AdminController.class).getUser(code)).withSelfRel();
-        return ResponseEntity.ok(found.add(self));
     }
 
     @PostMapping("/users")
@@ -79,28 +83,27 @@ public class AdminController
     @PutMapping("/users/{code}")
     public ResponseEntity<?> updateUser(@PathVariable("code") String code, @RequestBody User data)
     {
-        User saved;
         try {
-            saved = userService.updateOneUser(code, data);
-        } catch (NoSuchElementException e) {
+            User saved = userService.update(code, data);
+
+            Link self = linkTo(methodOn(AdminController.class).getUser(code)).withSelfRel();
+            return ResponseEntity.ok(saved.add(self));
+        }
+        catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
-
-        Link self = linkTo(methodOn(AdminController.class).getUser(code)).withSelfRel();
-        return ResponseEntity.ok(saved.add(self));
     }
 
     @DeleteMapping("/users/{code}")
     public ResponseEntity<?> deleteUser(@PathVariable("code") String code)
     {
         try {
-            userService.getOneUser(code);
-        } catch (NoSuchElementException e) {
+            userService.delete(code);
+            return ResponseEntity.noContent().build();
+        }
+        catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
-
-        userService.deleteOneUser(code);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/resources")
@@ -109,38 +112,180 @@ public class AdminController
         if(req == null)
             return ResponseEntity.badRequest().build();
 
-        SortedSet<Resource> data;
         try {
-            data = resourceService.getResources(req);
-        } catch (InvalidPropertyException e) {
+            SortedSet<Resource> data = resourceService.get(req);
+            for(Resource r : data)
+                r.add(linkTo(methodOn(AdminController.class).getResource(r.getCode())).withSelfRel());
+
+            Link all = linkTo(methodOn(AdminController.class).getAllResources(req)).withSelfRel();
+            return ResponseEntity.ok(CollectionModel.of(data, all));
+        }
+        catch (InvalidPropertyException e) {
             return ResponseEntity.badRequest().build();
         }
-
-        for(Resource r : data)
-            r.add(linkTo(methodOn(AdminController.class).getResource(r.getCode())).withSelfRel());
-
-        Link all = linkTo(methodOn(AdminController.class).getAllResources(req)).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(data, all));
     }
 
     @GetMapping("/resources/{code}")
     public ResponseEntity<?> getResource(@PathVariable("code") String code)
     {
-        Resource found;
         try {
-            found = resourceService.getOneResource(code);
-        } catch(NoSuchElementException e) {
+            Resource found = resourceService.get(code);
+            Link self = linkTo(methodOn(AdminController.class).getResource(code)).withSelfRel();
+            return ResponseEntity.ok(found.add(self));
+        }
+        catch(NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
+    }
 
-        Link self = linkTo(methodOn(AdminController.class).getResource(code)).withSelfRel();
-        return ResponseEntity.ok(found.add(self));
+    @GetMapping("/resources/{code}/files/{fileCode}")
+    public ResponseEntity<?> getFile(@PathVariable("code") String code, @PathVariable("fileCode") String fileCode)
+    {
+        try {
+            ResourceFile found = resourceService.getFile(code, fileCode);
+            File file = resourceService.getFileObject(found);
+
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            String type = URLConnection.guessContentTypeFromName(found.getName());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + found.getName());
+            headers.add(HttpHeaders.CONTENT_LENGTH, Long.toString(file.length()));
+            headers.add(HttpHeaders.CONTENT_TYPE, type);
+
+            return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+        catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/resources/{code}/files")
+    public ResponseEntity<?> getFiles(@PathVariable("code") String code)
+    {
+        try {
+            Set<ResourceFile> found = resourceService.get(code).getFiles();
+            for(ResourceFile f : found)
+                f.add(linkTo(methodOn(AdminController.class).getFile(code, f.getCode())).withSelfRel());
+
+            Link all = linkTo(methodOn(AdminController.class).getFiles(code)).withSelfRel();
+            return ResponseEntity.ok(CollectionModel.of(found, all));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/resources/{code}/files")
+    public ResponseEntity<?> addFile(@PathVariable("code") String code, @RequestParam MultipartFile mpf)
+    {
+        try {
+            ResourceFile saved = resourceService.addFile(code, mpf);
+
+            Link self = linkTo(methodOn(AdminController.class).getFile(code, saved.getCode())).withSelfRel();
+            return ResponseEntity.ok(saved.add(self));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+        catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @DeleteMapping("/resources/{code}/files/{fileCode}")
+    public ResponseEntity<?> deleteFile(@PathVariable("code") String code, @PathVariable("fileCode") String fileCode)
+    {
+        try {
+            resourceService.deleteFile(code, fileCode);
+            return ResponseEntity.noContent().build();
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+        catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/resources/{code}/attributes/{prop}")
+    public ResponseEntity<?> getAttribute(@PathVariable("code") String resCode, @PathVariable("prop") String propName)
+    {
+        try {
+            ResourceAttribute found = resourceService.getAttribute(resCode, propName);
+            Link self = linkTo(methodOn(AdminController.class).getAttribute(resCode, propName)).withSelfRel();
+            return ResponseEntity.ok(found.add(self));
+        }
+        catch(NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/resources/{code}/attributes")
+    public ResponseEntity<?> getResourceAttributes(@PathVariable("code") String code)
+    {
+        try {
+            Set<ResourceAttribute> attrs = resourceService.get(code).getAttributes();
+            for(ResourceAttribute a : attrs)
+                a.add(linkTo(methodOn(AdminController.class).getAttribute(code, a.getProperty().getName())).withSelfRel());
+
+            Link all = linkTo(methodOn(AdminController.class).getResourceAttributes(code)).withSelfRel();
+            return ResponseEntity.ok(CollectionModel.of(attrs, all));
+        }
+        catch(NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/resources/{code}/attributes")
+    public ResponseEntity<?> addResourceAttributes(@PathVariable("code") String code, @RequestBody Collection<ResourceAttribute> data)
+    {
+        try {
+            Set<ResourceAttribute> saved = resourceService.addAttributes(code, data);
+            for(ResourceAttribute a : data)
+                a.add(linkTo(methodOn(AdminController.class).getAttribute(code, a.getProperty().getName())).withSelfRel());
+
+            Link all = linkTo(methodOn(AdminController.class).getResourceAttributes(code)).withSelfRel();
+            return ResponseEntity.ok(CollectionModel.of(saved, all));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/resources/{code}/attributes/{prop}")
+    public ResponseEntity<?> updateAttribute(@PathVariable("code") String code, @PathVariable("prop") String propName, @RequestBody ResourceAttribute data)
+    {
+        try {
+            ResourceAttribute saved = resourceService.updateAttribute(code, propName, data);
+
+            Link self = linkTo(methodOn(AdminController.class).getAttribute(code, propName)).withSelfRel();
+            return ResponseEntity.ok(saved.add(self));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/resources/{code}/attributes/{prop}")
+    public ResponseEntity<?> deleteAttribute(@PathVariable("code") String code, @PathVariable("prop") String propName)
+    {
+        try {
+            resourceService.deleteAttribute(code, propName);
+            return ResponseEntity.noContent().build();
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/resources")
     public ResponseEntity<?> addResources(@RequestBody Collection<Resource> data)
     {
-        Set<Resource> saved = resourceService.addResources(data);
+        Set<Resource> saved = resourceService.add(data);
         for(Resource r : saved)
             r.add(linkTo(methodOn(AdminController.class).getResource(r.getCode())).withSelfRel());
 
@@ -151,93 +296,169 @@ public class AdminController
     @PutMapping("/resources/{code}")
     public ResponseEntity<?> updateResource(@PathVariable("code") String code, @RequestBody Resource data)
     {
-        Resource saved;
         try {
-            saved = resourceService.updateOneResource(code, data);
-        } catch(NoSuchElementException e) {
+            Resource saved = resourceService.update(code, data);
+
+            Link self = linkTo(methodOn(AdminController.class).getResource(code)).withSelfRel();
+            return ResponseEntity.ok(saved.add(self));
+        }
+        catch(NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-
-        Link self = linkTo(methodOn(AdminController.class).getResource(code)).withSelfRel();
-        return ResponseEntity.ok(saved.add(self));
     }
 
     @DeleteMapping("/resources/{code}")
     public ResponseEntity<?> deleteResource(@PathVariable("code") String code)
     {
         try {
-            resourceService.getOneResource(code);
-        } catch (NoSuchElementException e) {
+            resourceService.delete(code);
+            return ResponseEntity.noContent().build();
+        }
+        catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
-
-        resourceService.deleteOneResource(code);
-        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/resource-types/{code}")
+    @GetMapping("/types/{code}")
     public ResponseEntity<?> getResourceType(@PathVariable("code") String code)
     {
-        ResourceType found;
         try {
-            found = resourceTypeService.getOneType(code);
-        } catch(NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
-        }
+            ResourceType found = resourceTypeService.get(code);
 
-        Link self = linkTo(methodOn(AdminController.class).getResourceType(code)).withSelfRel();
-        return ResponseEntity.ok(found.add(self));
-    }
-
-    @GetMapping("/resources-types")
-    public ResponseEntity<?> getAllResourcesTypes(@RequestBody EntitySetRequest req)
-    {
-        if(req == null)
-            return ResponseEntity.badRequest().build();
-
-        SortedSet<ResourceType> data = resourceTypeService.getTypes(req);
-        for(ResourceType t : data)
-            t.add(linkTo(methodOn(AdminController.class).getResourceType(t.getCode())).withSelfRel());
-
-        Link all = linkTo(methodOn(AdminController.class).getAllResourcesTypes(req)).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(data, all));
-    }
-
-    @PostMapping("/resource-types")
-    public ResponseEntity<?> addResourceTypes(@RequestBody Collection<ResourceType> data)
-    {
-        Set<ResourceType> saved = resourceTypeService.addTypes(data);
-        for(ResourceType t : saved)
-            t.add(linkTo(methodOn(AdminController.class).getResourceType(t.getCode())).withSelfRel());
-
-        Link all = linkTo(methodOn(AdminController.class).getAllResourcesTypes(EntitySetRequest.simple())).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(saved, all));
-    }
-
-    @PutMapping("/resource-types/{code}")
-    public ResponseEntity<?> updateResourceType(@PathVariable("code") String code, @RequestBody ResourceType type)
-    {
-        ResourceType saved;
-        try {
-            saved = resourceTypeService.updateType(code, type);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Link self = linkTo(methodOn(AdminController.class).getResourceType(code)).withSelfRel();
-        return ResponseEntity.ok(saved.add(self));
-    }
-
-    @DeleteMapping("/resources/{code}")
-    public ResponseEntity<?> deleteResourceType(@PathVariable("code") String code)
-    {
-        try {
-            resourceTypeService.delete(code);
+            Link self = linkTo(methodOn(AdminController.class).getResourceType(code)).withSelfRel();
+            return ResponseEntity.ok(found.add(self));
         }
         catch(NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
+    }
 
-        return ResponseEntity.noContent().build();
+    @GetMapping("/types")
+    public ResponseEntity<?> getResourcesTypes(@RequestBody EntitySetRequest req)
+    {
+        if(req == null)
+            return ResponseEntity.badRequest().build();
+
+        SortedSet<ResourceType> data = resourceTypeService.get(req);
+        for(ResourceType t : data)
+            t.add(linkTo(methodOn(AdminController.class).getResourceType(t.getCode())).withSelfRel());
+
+        Link all = linkTo(methodOn(AdminController.class).getResourcesTypes(req)).withSelfRel();
+        return ResponseEntity.ok(CollectionModel.of(data, all));
+    }
+
+    @PostMapping("/types")
+    public ResponseEntity<?> addResourceTypes(@RequestBody Collection<ResourceType> data)
+    {
+        Set<ResourceType> saved = resourceTypeService.add(data);
+        for(ResourceType t : saved)
+            t.add(linkTo(methodOn(AdminController.class).getResourceType(t.getCode())).withSelfRel());
+
+        Link all = linkTo(methodOn(AdminController.class).getResourcesTypes(EntitySetRequest.simple())).withSelfRel();
+        return ResponseEntity.ok(CollectionModel.of(saved, all));
+    }
+
+    @PutMapping("/types/{code}")
+    public ResponseEntity<?> updateResourceType(@PathVariable("code") String code, @RequestBody ResourceType type)
+    {
+        try {
+            ResourceType saved = resourceTypeService.update(code, type);
+
+            Link self = linkTo(methodOn(AdminController.class).getResourceType(code)).withSelfRel();
+            return ResponseEntity.ok(saved.add(self));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/types/{code}")
+    public ResponseEntity<?> deleteResourceType(@PathVariable("code") String code)
+    {
+        try {
+            resourceTypeService.delete(code);
+            return ResponseEntity.noContent().build();
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/types/{code}/properties/{prop}")
+    public ResponseEntity<?> getProperty(@PathVariable("code") String code, @PathVariable("prop") String propName)
+    {
+        try {
+            ResourceProperty found = resourceTypeService.getProperty(code, propName);
+
+            Link self = linkTo(methodOn(AdminController.class).getProperty(code, propName)).withSelfRel();
+            return ResponseEntity.ok(found.add(self));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/types/{code}/properties")
+    public ResponseEntity<?> getProperties(@PathVariable("code") String code)
+    {
+        try {
+            ResourceType found = resourceTypeService.get(code);
+
+            Set<ResourceProperty> props = found.getProperties();
+            for(ResourceProperty p : props) {
+                String purePropName = p.getName().split("#")[1];
+                p.add(linkTo(methodOn(AdminController.class).getProperty(code, purePropName)).withSelfRel());
+            }
+
+            Link all = linkTo(methodOn(AdminController.class).getProperties(code)).withSelfRel();
+            return ResponseEntity.ok(CollectionModel.of(props, all));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/types/{code}/properties")
+    public ResponseEntity<?> addProperties(@PathVariable("code") String code, @RequestBody Collection<ResourceProperty> data)
+    {
+        try {
+            Set<ResourceProperty> saved = resourceTypeService.addProperties(code, data);
+            for (ResourceProperty t : saved) {
+                String purePropName = t.getName().split("#")[1];
+                t.add(linkTo(methodOn(AdminController.class).getProperty(code, purePropName)).withSelfRel());
+            }
+
+            Link all = linkTo(methodOn(AdminController.class).getProperties(code)).withSelfRel();
+            return ResponseEntity.ok(CollectionModel.of(saved, all));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/types/{code}/properties/{name}")
+    public ResponseEntity<?> updateProperty(@PathVariable("code") String code, @PathVariable("name") String propName, @RequestBody ResourceProperty data)
+    {
+        try {
+            ResourceProperty saved = resourceTypeService.updateProperty(code, propName, data);
+
+            Link self = linkTo(methodOn(AdminController.class).getProperty(code, propName)).withSelfRel();
+            return ResponseEntity.ok(saved.add(self));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/types/{code}/properties/{name}")
+    public ResponseEntity<?> deleteProperty(@PathVariable("code") String code, @PathVariable("name") String propName)
+    {
+        try {
+            resourceTypeService.deleteProperty(code, propName);
+            return ResponseEntity.noContent().build();
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

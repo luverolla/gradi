@@ -1,36 +1,8 @@
 package io.luverolla.gradi.repositories;
 
 import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.entities.ResourceType;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.Set;
-
-public interface ResourceRepository extends JpaRepository<Resource, String>
-{
-    /**
-     * Makes a paged query. Index are used instead of OFFSET...LIMIT
-     * @param page the zero-based page offset
-     * @param limit maximum number of resources to be retrieved
-     * @return set of retrieved resources
-     */
-    @Query("select distinct r from Resource r where r.index between ?1 * ?2 and ?1 * ?2 + ?2")
-    Set<Resource> findAll(int page, int limit);
-
-    @Query("select r from Resource r where r.code = ?1")
-    Resource findOne(String code);
-
-    @Query("delete from Resource r where r.code = ?1")
-    void deleteOne(String code);
-
-    /**
-     * Gets all resources of given type
-     * @param t given type
-     * @return set of resources
-     */
-    @Query("select distinct r from Resource r where r.type = ?1")
-    Set<Resource> findAllByType(ResourceType t);
-}
+public interface ResourceRepository extends PagingAndSortingRepository<Resource, String> {}
 

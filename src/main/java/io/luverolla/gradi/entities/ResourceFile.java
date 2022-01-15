@@ -18,17 +18,6 @@ import lombok.Setter;
 public class ResourceFile extends CodedEntity
 {
 	@Column(nullable = false)
-	@GeneratedValue(generator = "gradi_resource_file_sequence", strategy = GenerationType.SEQUENCE)
-	@SequenceGenerator(name = "gradi_resource_file_sequence", sequenceName = "gradi_resource_file_sequence")
-	private Long index;
-
-	@Column(nullable = false, unique = true)
-	private String uri;
-	
-	@Column(nullable = false, unique = true)
-	private String path;
-	
-	@Column(nullable = false)
 	private String name;
 	
 	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)

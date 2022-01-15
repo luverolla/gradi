@@ -7,10 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Entity
@@ -24,9 +27,16 @@ public class ResourcePermission extends RepresentationModel<ResourcePermission>
 
     @JsonIgnore
     @Id
-    @GeneratedValue(generator = "gradi_resource_permission_sequence", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "gradi_resource_permission_sequence", sequenceName = "gradi_resource_permission_sequence")
+    @GeneratedValue(generator = "gradi_resource_permission_id", strategy = GenerationType.SEQUENCE)
     private Long index;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private OffsetDateTime updatedAt;
 
     @JsonIgnoreProperties({"createdAt", "updatedAt", "description", "permissions"})
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
