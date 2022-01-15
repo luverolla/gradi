@@ -32,9 +32,7 @@ public class JwtUserService implements UserDetailsService
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException
     {
-        User us = repo.findAll().stream()
-            .filter(u -> u.getEmail().equals(s))
-            .findFirst().orElseThrow();
+        User us = repo.findByEmail(s).orElseThrow(() -> new UsernameNotFoundException(""));
         
         System.out.println(us.getRole().toString());
         GrantedAuthority au = new SimpleGrantedAuthority("ROLE_" + us.getRole().toString());
