@@ -4,8 +4,6 @@ import io.luverolla.gradi.rest.AuthenticationRequest;
 import io.luverolla.gradi.rest.AuthenticationResponse;
 import io.luverolla.gradi.security.JwtUserService;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -64,11 +62,5 @@ public class PublicController
         
         AuthenticationResponse res = new AuthenticationResponse(tokenHeader, token, expiration);
         return ResponseEntity.ok(res);
-    }
-    
-    @GetMapping("/self-test")
-    public ResponseEntity<?> __selftest()
-    {
-    	return ResponseEntity.ok(Map.of("result", "success"));
     }
 }

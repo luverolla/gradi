@@ -3,6 +3,7 @@ package io.luverolla.gradi.controllers;
 import io.luverolla.gradi.entities.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.rest.EntitySetRequest;
+import io.luverolla.gradi.services.MessageService;
 import io.luverolla.gradi.services.ResourceService;
 import io.luverolla.gradi.services.ResourceTypeService;
 import io.luverolla.gradi.services.UserService;
@@ -34,6 +35,9 @@ public class AdminController
 {
 	@Autowired
     private UserService userService;
+
+    @Autowired
+    private MessageService messageService;
 
     @Autowired
     private ResourceService resourceService;
@@ -76,8 +80,7 @@ public class AdminController
         for(User u : saved)
             u.add(linkTo(methodOn(AdminController.class).getUser(u.getCode())).withSelfRel());
 
-        Link all = linkTo(methodOn(AdminController.class).getAllUsers(EntitySetRequest.simple())).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(saved, all));
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/users/{code}")
@@ -289,8 +292,7 @@ public class AdminController
         for(Resource r : saved)
             r.add(linkTo(methodOn(AdminController.class).getResource(r.getCode())).withSelfRel());
 
-        Link all = linkTo(methodOn(AdminController.class).getAllResources(null)).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(saved, all));
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/resources/{code}")
@@ -354,8 +356,7 @@ public class AdminController
         for(ResourceType t : saved)
             t.add(linkTo(methodOn(AdminController.class).getResourceType(t.getCode())).withSelfRel());
 
-        Link all = linkTo(methodOn(AdminController.class).getResourcesTypes(EntitySetRequest.simple())).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(saved, all));
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/types/{code}")
@@ -423,9 +424,9 @@ public class AdminController
     {
         try {
             Set<ResourceProperty> saved = resourceTypeService.addProperties(code, data);
-            for (ResourceProperty t : saved) {
-                String purePropName = t.getName().split("#")[1];
-                t.add(linkTo(methodOn(AdminController.class).getProperty(code, purePropName)).withSelfRel());
+            for(ResourceProperty p : saved) {
+                String purePropName = p.getName().split("#")[1];
+                p.add(linkTo(methodOn(AdminController.class).getProperty(code, purePropName)).withSelfRel());
             }
 
             Link all = linkTo(methodOn(AdminController.class).getProperties(code)).withSelfRel();
@@ -455,6 +456,53 @@ public class AdminController
     {
         try {
             resourceTypeService.deleteProperty(code, propName);
+            return ResponseEntity.noContent().build();
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/messages/{code}")
+    public ResponseEntity<?> getMessage(@PathVariable("code") String code)
+    {
+        try {
+            Message found = messageService.get(code);
+
+            Link self = linkTo(methodOn(AdminController.class).getMessage(code)).withSelfRel();
+            return ResponseEntity.ok(found.add(self));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/messages")
+    public ResponseEntity<?> getMessages(@RequestBody EntitySetRequest req)
+    {
+        SortedSet<Message> data = messageService.get(req);
+        for(Message m : data)
+            m.add(linkTo(methodOn(AdminController.class).getMessage(m.getCode())).withSelfRel());
+
+        Link all = linkTo(methodOn(AdminController.class).getMessages(req)).withSelfRel();
+        return ResponseEntity.ok(CollectionModel.of(data, all));
+    }
+
+    @PostMapping("/messages")
+    public ResponseEntity<?> addMessages(@RequestBody Collection<Message> data)
+    {
+        Set<Message> saved = messageService.add(data);
+        for(Message m : saved)
+            m.add(linkTo(methodOn(AdminController.class).getMessage(m.getCode())).withSelfRel());
+
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/messages/{code}")
+    public ResponseEntity<?> deleteMessage(@PathVariable("code") String code)
+    {
+        try {
+            messageService.delete(code);
             return ResponseEntity.noContent().build();
         }
         catch (NoSuchElementException e) {

@@ -19,11 +19,6 @@ public class Resource extends CodedEntity
     public enum Visibility { PUBLIC, INTERNAL, RESTRICTED };
 
     @Column(nullable = false)
-    @GeneratedValue(generator = "gradi_resource_sequence", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "gradi_resource_sequence", sequenceName = "gradi_resource_sequence")
-    private Long index;
-
-    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)

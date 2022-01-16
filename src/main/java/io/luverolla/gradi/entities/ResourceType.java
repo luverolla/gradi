@@ -20,12 +20,10 @@ import java.util.Set;
 public class ResourceType extends CodedEntity
 {
     @Column(nullable = false)
-    @GeneratedValue(generator = "gradi_resource_type_sequence", strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "gradi_resource_type_sequence", sequenceName = "gradi_resource_type_sequence")
-    private Long index;
-
-    @Column(nullable = false)
     private String name;
+
+    @Column(columnDefinition = "text")
+    private String brief;
 
     @Column(columnDefinition = "text")
     private String description;
