@@ -124,8 +124,9 @@ public class AdminController
     public ResponseEntity<?> getFile(@PathVariable("code") String code, @PathVariable("fileCode") String fileCode)
     {
         try {
-            ResourceFile found = resourceService.getFile(code, fileCode);
-            File file = resourceService.getFileObject(found);
+            Resource found = resourceService.get(code);
+            ResourceFile rf = resourceService.getFile(found, fileCode);
+            File file = resourceService.getFileObject(rf);
 
             byte[] bytes = Files.readAllBytes(file.toPath());
             String type = URLConnection.guessContentTypeFromName(found.getName());
@@ -161,7 +162,8 @@ public class AdminController
     public ResponseEntity<?> addFile(@PathVariable("code") String code, @RequestParam MultipartFile mpf)
     {
         try {
-            ResourceFile saved = resourceService.addFile(code, mpf);
+            Resource found = resourceService.get(code);
+            ResourceFile saved = resourceService.addFile(found, mpf);
             return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
@@ -176,7 +178,8 @@ public class AdminController
     public ResponseEntity<?> deleteFile(@PathVariable("code") String code, @PathVariable("fileCode") String fileCode)
     {
         try {
-            resourceService.deleteFile(code, fileCode);
+            Resource found = resourceService.get(code);
+            resourceService.deleteFile(found, fileCode);
             return ResponseEntity.noContent().build();
         }
         catch (NoSuchElementException e) {
@@ -191,8 +194,9 @@ public class AdminController
     public ResponseEntity<?> getAttribute(@PathVariable("code") String resCode, @PathVariable("prop") String propName)
     {
         try {
-            ResourceAttribute found = resourceService.getAttribute(resCode, propName);
-            return ResponseEntity.ok(found);
+            Resource found = resourceService.get(resCode);
+            ResourceAttribute ra = resourceService.getAttribute(found, propName);
+            return ResponseEntity.ok(ra);
         }
         catch(NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -215,7 +219,8 @@ public class AdminController
     public ResponseEntity<?> addResourceAttributes(@PathVariable("code") String code, @RequestBody Collection<ResourceAttribute> data)
     {
         try {
-            Set<ResourceAttribute> saved = resourceService.addAttributes(code, data);
+            Resource found = resourceService.get(code);
+            Resource saved = resourceService.addAttributes(found, data);
             return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
@@ -227,7 +232,8 @@ public class AdminController
     public ResponseEntity<?> updateAttribute(@PathVariable("code") String code, @PathVariable("prop") String propName, @RequestBody ResourceAttribute data)
     {
         try {
-            ResourceAttribute saved = resourceService.updateAttribute(code, propName, data);
+            Resource found = resourceService.get(code);
+            ResourceAttribute saved = resourceService.updateAttribute(found, propName, data);
             return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
@@ -239,7 +245,8 @@ public class AdminController
     public ResponseEntity<?> deleteAttribute(@PathVariable("code") String code, @PathVariable("prop") String propName)
     {
         try {
-            resourceService.deleteAttribute(code, propName);
+            Resource found = resourceService.get(code);
+            resourceService.deleteAttribute(found, propName);
             return ResponseEntity.noContent().build();
         }
         catch (NoSuchElementException e) {
@@ -279,7 +286,8 @@ public class AdminController
     public ResponseEntity<?> setPermissions(@PathVariable("code") String code, @RequestBody Set<ResourcePermission> data)
     {
         try {
-            Set<ResourcePermission> saved = resourceService.setPermissions(code, data);
+            Resource found = resourceService.get(code);
+            Set<ResourcePermission> saved = resourceService.setPermissions(found, data);
             return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {

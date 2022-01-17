@@ -1,9 +1,11 @@
 package io.luverolla.gradi.services;
 
+import java.security.Principal;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -94,6 +96,22 @@ public class UserService extends EntityService<User>
         found.setDescription(data.getDescription());
 
         return repo.save(found);
+    }
+
+    public User get(Principal pr)
+    {
+        return getByEmail(((UserDetails) pr).getUsername());
+    }
+
+    public User getAdmin()
+    {
+        return repo.getAdmin();
+    }
+
+    public User getByEmail(String email)
+    {
+        return repo.findByEmail(email)
+            .orElseThrow(NoSuchElementException::new);
     }
 
     public void passwordReset(User u)

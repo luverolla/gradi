@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,5 +75,14 @@ public class Resource extends CodedEntity
         return permissions.stream()
             .map(ResourcePermission::getType)
                 .collect(Collectors.toSet());
+    }
+
+    public ResourcePermission.Type getPermissionType(User u)
+    {
+        ResourcePermission p = permissions.stream()
+            .filter(e -> e.getUser().equals(u)).findFirst()
+                .orElseThrow(NoSuchElementException::new);
+
+        return p.getType();
     }
 }

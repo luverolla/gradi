@@ -23,15 +23,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
-    public void configureAuthentication(AuthenticationManagerBuilder amb, UserDetailsService service) 
-    throws Exception
+    public void configureAuthentication(AuthenticationManagerBuilder amb, UserDetailsService service) throws Exception
     {
         amb.userDetailsService(service).passwordEncoder(passwordEncoder());
     }
 
     @Bean
-    public AuthenticationManager customAuthenticationManager()
-    throws Exception
+    public AuthenticationManager customAuthenticationManager() throws Exception
     {
         return authenticationManager();
     }
@@ -44,7 +42,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 
     @Bean
     public JwtAuthenticationTokenFilter authenticationTokenFilterBean()
-    throws Exception 
     {
         return new JwtAuthenticationTokenFilter();
     }

@@ -59,4 +59,9 @@ public class User extends CodedEntity
     {
         return getFullName() + " <" + email + ">";
     }
+
+    public boolean isAdmin()
+    {
+        return getCode().equals("0000000000");
+    }
 }

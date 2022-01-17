@@ -6,17 +6,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.entities.*;
+import io.luverolla.gradi.entities.ResourcePermission.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.repositories.*;
+import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -130,45 +135,101 @@ public class ResourceService extends EntityService<Resource>
 	}
 
 	/**
+	 * Gets all resources that a given user is authorized to read/write
+	 *
+	 * @param u given user
+	 * @param w if true, user must have also write permission on resource
+	 * @param req request object
+	 *
+	 * @return set of resources
+	 */
+	public SortedSet<Resource> get(User u, boolean w, EntitySetRequest req)
+	{
+		if(w)
+			return repo.findAllUserWrite(u, PageRequest.of(req.getPage(), req.getLimit()))
+				.filter(chainFilters(req)::test).stream()
+					.collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
+
+		else
+			return repo.findAllUserRead(u, PageRequest.of(req.getPage(), req.getLimit()))
+				.filter(chainFilters(req)::test).stream()
+					.collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
+	}
+
+	/**
+	 * Gets single resource by its code only if a given user is authorized to read
+	 *
+	 * @param u the given user
+	 * @param w if true, user must have also write permission on resource
+	 * @param code resource's code
+	 *
+	 * @throws NoSuchElementException if resource doesn't exist or user is not authorized to read it
+	 * @return resource object, if it exists
+	 */
+	public Resource get(User u, boolean w, String code)
+	{
+		if(w)
+			return repo.findOneUserWrite(u, code)
+				.orElseThrow(NoSuchElementException::new);
+
+		else
+			return repo.findOneUserRead(u, code)
+				.orElseThrow(NoSuchElementException::new);
+	}
+
+	/**
+	 * Updates resource only if a given user has write-permission to it
+	 *
+	 * @param u given user
+	 * @param code resource's code
+	 * @param data new resource data
+	 *
+	 * @throws NoSuchElementException if resource doesn't exist or user hasn't got write permissions on it
+	 * @return updated resource, if no errors occur
+	 */
+	public Resource update(User u, String code, Resource data)
+	{
+		get(u, true, code); // needed to trigger exception if user hasn't got write permissions
+		return update(code, data);
+	}
+
+	/**
 	 * Get resource attribute if exists
 	 *
-	 * @param resCode resource's code
+	 * @param r given resource
 	 * @param propName attribute's property's name
 	 *
 	 * @throws NoSuchElementException if attribute doesn't exist
 	 * @return {@link ResourceAttribute} object, if exists
 	 */
-	public ResourceAttribute getAttribute(String resCode, String propName)
+	public ResourceAttribute getAttribute(Resource r, String propName)
 	{
-		return get(resCode).getAttributes()
-			.stream().filter(a -> a.getName().equals(resCode + "#" + propName))
+		return r.getAttributes().stream()
+			.filter(a -> a.getName().equals(r.getCode() + "#" + propName))
 				.findFirst().orElseThrow(NoSuchElementException::new);
 	}
 
 	/**
 	 * Adds attributes to resource
 	 *
-	 * @param resCode given resource's code
+	 * @param r given resource
 	 * @param data collection of {@link ResourceAttribute} objects
 	 *
 	 * @throws NoSuchElementException if given resource doesn't exist
 	 * @return saved objects, with unique names
 	 */
-	public Set<ResourceAttribute> addAttributes(String resCode, Collection<ResourceAttribute> data)
+	public Resource addAttributes(Resource r, Collection<ResourceAttribute> data)
 	{
-		Resource found = get(resCode);
-
 		for(ResourceAttribute a : data)
 		{
-			a.setResource(found);
-			a.setName(resCode + "#" + a.getName());
+			a.setResource(r);
+			a.setName(r + "#" + a.getName());
 		}
 
 		Set<ResourceAttribute> saved = new HashSet<>(data);
-		found.setAttributes(saved);
-		repo.save(found);
+		r.setAttributes(saved);
 
-		return saved;
+		return repo.save(r);
 	}
 
 	/**
@@ -176,17 +237,17 @@ public class ResourceService extends EntityService<Resource>
 	 *
 	 * Only attribute's value can be altered
 	 *
-	 * @param resCode given resource's code
+	 * @param r given resource
 	 * @param propName attribute's property's name
 	 * @param data new attribute data
 	 *
 	 * @throws NoSuchElementException if given resource or attribute don't exist
 	 * @return updated object, if no errors occurr
 	 */
-	public ResourceAttribute updateAttribute(String resCode, String propName, ResourceAttribute data)
+	public ResourceAttribute updateAttribute(Resource r, String propName, ResourceAttribute data)
 	{
 		// only attribute value can be altered
-		ResourceAttribute found = getAttribute(resCode, propName);
+		ResourceAttribute found = getAttribute(r, propName);
 		found.setValue(data.getValue());
 
 		return attrRepo.save(found);
@@ -195,28 +256,28 @@ public class ResourceService extends EntityService<Resource>
 	/**
 	 * Deletes resource attribute
 	 *
-	 * @param resCode given resource's code
+	 * @param r given resource
 	 * @param propName attribute's property's name
 	 *
 	 * @throws NoSuchElementException if resource or attribute don't exist
 	 */
-	public void deleteAttribute(String resCode, String propName)
+	public void deleteAttribute(Resource r, String propName)
 	{
-		attrRepo.delete(getAttribute(resCode, propName));
+		attrRepo.delete(getAttribute(r, propName));
 	}
 
 	/**
 	 * Retrieves a {@link ResourceFile} object
 	 *
-	 * @param resCode given resource's code
+	 * @param r given resource
 	 * @param fileCode resource file's code
 	 *
 	 * @throws NoSuchElementException if resource or file don't exist
 	 * @return {@link ResourceFile} object, if it exists
 	 */
-	public ResourceFile getFile(String resCode, String fileCode)
+	public ResourceFile getFile(Resource r, String fileCode)
 	{
-		return get(resCode).getFiles().stream()
+		return r.getFiles().stream()
 			.filter(f -> f.getCode().equalsIgnoreCase(fileCode))
 				.findFirst().orElseThrow(NoSuchElementException::new);
 	}
@@ -243,14 +304,14 @@ public class ResourceService extends EntityService<Resource>
 	 *
 	 * Default upload directory is the one in <code>application.properties</code> file
 	 *
-	 * @param resCode given resource's code
+	 * @param r given resource
 	 * @param mpf file content
 	 *
 	 * @throws NoSuchElementException if resource doesn't exist
 	 * @throws IOException if file saving gets into error
 	 * @return saved {@link ResourceFile} object, if no errors occur
 	 */
-	public ResourceFile addFile(String resCode, MultipartFile mpf) throws IOException
+	public ResourceFile addFile(Resource r, MultipartFile mpf) throws IOException
 	{
 		if(mpf.getOriginalFilename() == null)
 			throw new NullPointerException();
@@ -262,7 +323,7 @@ public class ResourceService extends EntityService<Resource>
 		ResourceFile file = new ResourceFile();
 		file.setCode(code);
 		file.setName(code + "." + ext);
-		file.setResource(get(resCode));
+		file.setResource(r);
 
 		Path path = Paths.get(uploadDir + "/" + file.getName());
 		Files.write(path, mpf.getBytes());
@@ -273,15 +334,15 @@ public class ResourceService extends EntityService<Resource>
 	/**
 	 * Deletes file from resource
 	 *
-	 * @param resCode given resource's code
+	 * @param r given resource
 	 * @param fileCode given file's code
 	 *
 	 * @throws NoSuchElementException if resource or file don't exist
 	 * @throws IOException if file deletion goes into error
 	 */
-	public void deleteFile(String resCode, String fileCode) throws IOException
+	public void deleteFile(Resource r, String fileCode) throws IOException
 	{
-		ResourceFile found = getFile(resCode, fileCode);
+		ResourceFile found = getFile(r, fileCode);
 
 		File file = Paths.get(uploadDir + "/" + found.getName()).toFile();
 		if(!file.delete()) throw new IOException();
@@ -294,19 +355,24 @@ public class ResourceService extends EntityService<Resource>
 	 *
 	 * Deletes all previously stored permissions and readd them from zero
 	 *
-	 * @param resCode resource's code
+	 * @param r given resource
 	 * @param data permission set
 	 *
 	 * @throws NoSuchElementException if resource doesn't exist
 	 * @return updated resource, if it exists
 	 */
-	public Set<ResourcePermission> setPermissions(String resCode, Set<ResourcePermission> data)
+	public Set<ResourcePermission> setPermissions(Resource r, Set<ResourcePermission> data)
 	{
-		Resource found = get(resCode);
-		permRepo.resetResource(found);
+		// permission of type 'FULL' must always be preserved
+		ResourcePermission full = r.getPermissions()
+			.stream().filter(p -> p.getType().equals(Type.FULL))
+				.findFirst().orElseThrow(NoSuchElementException::new);
+
+		permRepo.resetResource(r);
+		permRepo.save(full);
 
 		for(ResourcePermission p : data)
-			p.setResource(found);
+			p.setResource(r);
 
 		return new HashSet<>((List<ResourcePermission>) permRepo.saveAll(data));
 	}

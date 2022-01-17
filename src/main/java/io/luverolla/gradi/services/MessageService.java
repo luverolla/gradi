@@ -7,7 +7,9 @@ import io.luverolla.gradi.comparators.MessageComparatorSubject;
 import io.luverolla.gradi.comparators.MessageComparatorVisibility;
 import io.luverolla.gradi.comparators.MessageComparatorType;
 import io.luverolla.gradi.entities.Message;
+import io.luverolla.gradi.entities.Message.Visibility;
 import io.luverolla.gradi.entities.User;
+import io.luverolla.gradi.entities.User.Role;
 import io.luverolla.gradi.filters.EntityFilterCode;
 import io.luverolla.gradi.filters.EntityFilterCreatedAt;
 import io.luverolla.gradi.filters.EntityFilterUpdatedAt;
@@ -17,6 +19,7 @@ import io.luverolla.gradi.filters.MessageFilterType;
 import io.luverolla.gradi.filters.MessageFilterText;
 import io.luverolla.gradi.repositories.MessageRepository;
 import io.luverolla.gradi.repositories.UserRepository;
+import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.Filter;
 
@@ -102,6 +105,51 @@ public class MessageService extends EntityService<Message>
         found.setText(data.getText());
 
         return repo.save(found);
+    }
+
+    /**
+     * Gets single message only if a given user has read permission on it
+     *
+     * @param u given user
+     * @param code message's code
+     *
+     * @throws NoSuchElementException if message doesn't exist or user hasn't got permission on it
+     * @return message object, if no errors occur
+     */
+    public Message get(User u, String code)
+    {
+        Message found = get(code);
+
+        // message for editors, but current user not editor
+        if(found.getVisibility().equals(Visibility.EDITORS) && u.getRole().equals(Role.USER))
+            throw new NoSuchElementException();
+
+        // message private, but user not in recipients
+        if(found.getVisibility().equals(Visibility.PRIVATE) && !found.getRecipients().contains(u))
+            throw new NoSuchElementException();
+
+        return found;
+    }
+
+    /**
+     * Returns a set of message that a given user has read permission onto
+     *
+     * @param u given user
+     * @param req request object
+     *
+     * @return message set
+     */
+    public SortedSet<Message> get(User u, EntitySetRequest req)
+    {
+        SortedSet<Message> found = get(req);
+
+        // message for editors, but current user not editor
+        found.removeIf(m -> m.getVisibility().equals(Visibility.EDITORS) && u.getRole().equals(Role.USER));
+
+        // message private, but user not in recipients
+        found.removeIf(m -> m.getVisibility().equals(Visibility.PRIVATE) && !m.getRecipients().contains(u));
+
+        return found;
     }
 
     /**
