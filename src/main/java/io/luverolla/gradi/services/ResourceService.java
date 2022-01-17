@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.entities.*;
@@ -20,8 +20,6 @@ import io.luverolla.gradi.structures.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -138,43 +136,42 @@ public class ResourceService extends EntityService<Resource>
 	 * Gets all resources that a given user is authorized to read/write
 	 *
 	 * @param u given user
-	 * @param w if true, user must have also write permission on resource
+	 * @param min lowest permission needed to access resource
 	 * @param req request object
 	 *
 	 * @return set of resources
 	 */
-	public SortedSet<Resource> get(User u, boolean w, EntitySetRequest req)
+	public SortedSet<Resource> get(User u, Type min, EntitySetRequest req)
 	{
-		if(w)
-			return repo.findAllUserWrite(u, PageRequest.of(req.getPage(), req.getLimit()))
-				.filter(chainFilters(req)::test).stream()
-					.collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
+		SortedSet<Resource> found = get(req);
 
-		else
-			return repo.findAllUserRead(u, PageRequest.of(req.getPage(), req.getLimit()))
-				.filter(chainFilters(req)::test).stream()
-					.collect(Collectors.toCollection(() -> new TreeSet<>(chainComparators(req))));
+		found.removeIf(r -> r.getPermissions().stream().noneMatch(p ->
+			p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal()
+		));
+
+		return found;
 	}
 
 	/**
 	 * Gets single resource by its code only if a given user is authorized to read
 	 *
 	 * @param u the given user
-	 * @param w if true, user must have also write permission on resource
+	 * @param min lowest permission needed to access resource
 	 * @param code resource's code
 	 *
 	 * @throws NoSuchElementException if resource doesn't exist or user is not authorized to read it
 	 * @return resource object, if it exists
 	 */
-	public Resource get(User u, boolean w, String code)
+	public Resource get(User u, Type min, String code)
 	{
-		if(w)
-			return repo.findOneUserWrite(u, code)
-				.orElseThrow(NoSuchElementException::new);
+		Predicate<ResourcePermission> pr = p ->
+			p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal();
 
-		else
-			return repo.findOneUserRead(u, code)
-				.orElseThrow(NoSuchElementException::new);
+		Resource found = get(code);
+		if(found.getPermissions().stream().noneMatch(pr))
+			throw new NoSuchElementException();
+
+		return found;
 	}
 
 	/**
@@ -189,7 +186,7 @@ public class ResourceService extends EntityService<Resource>
 	 */
 	public Resource update(User u, String code, Resource data)
 	{
-		get(u, true, code); // needed to trigger exception if user hasn't got write permissions
+		get(u, Type.WRITE, code); // needed to trigger exception if user hasn't got write permissions
 		return update(code, data);
 	}
 

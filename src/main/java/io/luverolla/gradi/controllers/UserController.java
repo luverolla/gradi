@@ -1,6 +1,7 @@
 package io.luverolla.gradi.controllers;
 
 import io.luverolla.gradi.entities.*;
+import io.luverolla.gradi.entities.ResourcePermission.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.rest.EntitySetRequest;
 import io.luverolla.gradi.services.MessageService;
@@ -26,6 +27,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 
+@RequestMapping("/api/user")
 @RestController
 public class UserController
 {
@@ -85,7 +87,7 @@ public class UserController
 
         try {
             User u = userService.get(pr);
-            SortedSet<Resource> data = resourceService.get(u, false, req);
+            SortedSet<Resource> data = resourceService.get(u, ResourcePermission.Type.READ, req);
             return ResponseEntity.ok(data);
         }
         catch (InvalidPropertyException e) {
@@ -98,7 +100,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource found = resourceService.get(u, false, code);
+            Resource found = resourceService.get(u, Type.READ, code);
             return ResponseEntity.ok(found);
         }
         catch(NoSuchElementException e) {
@@ -111,7 +113,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource res = resourceService.get(u, false, code);
+            Resource res = resourceService.get(u, Type.READ, code);
             ResourceFile found = resourceService.getFile(res, fileCode);
             File file = resourceService.getFileObject(found);
 
@@ -138,7 +140,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Set<ResourceFile> found = resourceService.get(u, false, code).getFiles();
+            Set<ResourceFile> found = resourceService.get(u, Type.READ, code).getFiles();
             return ResponseEntity.ok(found);
         }
         catch (NoSuchElementException e) {
@@ -152,7 +154,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource found = resourceService.get(u, true, code);
+            Resource found = resourceService.get(u, Type.WRITE, code);
             ResourceFile saved = resourceService.addFile(found, mpf);
             return ResponseEntity.ok(saved);
         }
@@ -170,7 +172,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource found = resourceService.get(u, true, code);
+            Resource found = resourceService.get(u, Type.WRITE, code);
             resourceService.deleteFile(found, fileCode);
             return ResponseEntity.noContent().build();
         }
@@ -187,7 +189,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource res = resourceService.get(u, false, resCode);
+            Resource res = resourceService.get(u, Type.READ, resCode);
             ResourceAttribute found = resourceService.getAttribute(res, propName);
             return ResponseEntity.ok(found);
         }
@@ -201,7 +203,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Set<ResourceAttribute> attrs = resourceService.get(u, false, code).getAttributes();
+            Set<ResourceAttribute> attrs = resourceService.get(u, Type.READ, code).getAttributes();
             return ResponseEntity.ok(attrs);
         }
         catch(NoSuchElementException e) {
@@ -215,7 +217,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource found = resourceService.get(u, true, code);
+            Resource found = resourceService.get(u, Type.WRITE, code);
             Resource saved = resourceService.addAttributes(found, data);
             return ResponseEntity.ok(saved);
         }
@@ -230,7 +232,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource found = resourceService.get(u, true, code);
+            Resource found = resourceService.get(u, Type.WRITE, code);
             ResourceAttribute saved = resourceService.updateAttribute(found, propName, data);
             return ResponseEntity.ok(saved);
         }
@@ -245,7 +247,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource found = resourceService.get(u, true, code);
+            Resource found = resourceService.get(u, Type.WRITE, code);
             resourceService.deleteAttribute(found, propName);
             return ResponseEntity.noContent().build();
         }
@@ -277,7 +279,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            resourceService.get(u, true, code); // needed to trigger exception
+            resourceService.get(u, Type.WRITE, code); // needed to trigger exception
             Resource saved = resourceService.update(code, data);
             return ResponseEntity.ok(saved);
         }
@@ -292,7 +294,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            Resource found = resourceService.get(u, true, code);
+            Resource found = resourceService.get(u, Type.FULL, code);
             Set<ResourcePermission> saved = resourceService.setPermissions(found, data);
             return ResponseEntity.ok(saved);
         }
@@ -307,7 +309,7 @@ public class UserController
     {
         try {
             User u = userService.get(pr);
-            resourceService.get(u, true, code); // needed to trigger exception
+            resourceService.get(u, Type.FULL, code); // needed to trigger exception
             resourceService.delete(code);
             return ResponseEntity.noContent().build();
         }

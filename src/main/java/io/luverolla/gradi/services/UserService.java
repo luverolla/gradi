@@ -100,7 +100,7 @@ public class UserService extends EntityService<User>
 
     public User get(Principal pr)
     {
-        return getByEmail(((UserDetails) pr).getUsername());
+        return getByEmail(pr.getName());
     }
 
     public User getAdmin()
