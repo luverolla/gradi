@@ -46,6 +46,7 @@ public class GradiApplication
 			User admin = _admin.get();
 			admin.setEmail(adminEmail);
 			admin.setPassword(encoder.encode(adminPassword));
+			repo.save(admin);
     	};
     }
 }

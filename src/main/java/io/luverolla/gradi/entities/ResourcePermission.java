@@ -9,7 +9,6 @@ import lombok.Setter;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 
@@ -21,7 +20,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourcePermission extends RepresentationModel<ResourcePermission>
+public class ResourcePermission
 {
     public enum Type { READ, WRITE, FULL };
 
@@ -39,11 +38,11 @@ public class ResourcePermission extends RepresentationModel<ResourcePermission>
     private OffsetDateTime updatedAt;
 
     @JsonIgnoreProperties({"createdAt", "updatedAt", "description", "permissions"})
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_code", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resource_code", nullable = false)
     private Resource resource;
 

@@ -1,6 +1,7 @@
 package io.luverolla.gradi.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.luverolla.gradi.exceptions.ResourceTypeMismatchException;
 import io.luverolla.gradi.structures.CodedEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "gradi_resources")
@@ -28,11 +30,12 @@ public class Resource extends CodedEntity
     @Column(columnDefinition = "text")
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JsonIgnoreProperties({"resources"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resource_type_code")
     private ResourceType type;
     
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_resource_code")
     private Resource parent;
 
@@ -54,11 +57,22 @@ public class Resource extends CodedEntity
 
     public ResourceAttribute getAttribute(ResourceProperty p)
     {
-        if(!type.getProperties().contains(p))
-            throw new RuntimeException("Resource type and property don't match");
-
         return attributes.stream()
             .filter(a -> a.getProperty().equals(p))
-                .findFirst().orElse(null);
+                .findFirst().orElseThrow(ResourceTypeMismatchException::new);
+    }
+
+    public Set<User> getPermissionsUsers()
+    {
+        return permissions.stream()
+            .map(ResourcePermission::getUser)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<ResourcePermission.Type> getPermissionsTypes()
+    {
+        return permissions.stream()
+            .map(ResourcePermission::getType)
+                .collect(Collectors.toSet());
     }
 }

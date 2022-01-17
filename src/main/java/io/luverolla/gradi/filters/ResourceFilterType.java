@@ -1,16 +1,18 @@
 package io.luverolla.gradi.filters;
 
 import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.entities.ResourceType;
 import io.luverolla.gradi.structures.Filter;
 
-import java.util.Set;
+import java.util.Collection;
 
-public class ResourceFilterType extends Filter<Resource, Set<ResourceType>>
+/**
+ * Gets all resources whose type's codes are included in a given collection
+ */
+public class ResourceFilterType extends Filter<Resource, Collection<String>>
 {
     @Override
     public boolean test(Resource r)
     {
-        return getValue().contains(r.getType());
+        return getValue().contains(r.getType().getCode());
     }
 }

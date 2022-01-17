@@ -1,12 +1,17 @@
 package io.luverolla.gradi.entities;
 
-import io.luverolla.gradi.structures.CodedEntity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
+
+import java.time.OffsetDateTime;
 
 /**
  * Resource custom attribute
@@ -22,21 +27,31 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourceAttribute extends CodedEntity
+public class ResourceAttribute
 {
     @Id
     private String name;
 
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private OffsetDateTime updatedAt;
+
     @Column(columnDefinition = "text")
     private String value;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JsonIgnoreProperties({"attributes", "type"})
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "resource_property_name", nullable = false)
+    private ResourceProperty property;
+
+    @JsonIgnoreProperties({"attributes"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resource_code", nullable = false)
     private Resource resource;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "resource_property_code", nullable = false)
-    private ResourceProperty property;
 
     @Override
     public boolean equals(Object o)
@@ -49,17 +64,5 @@ public class ResourceAttribute extends CodedEntity
 
         ResourceAttribute that = (ResourceAttribute) o;
         return resource.equals(that.getResource()) && property.equals(that.getProperty());
-    }
-
-    /**
-     * Tells if resource attribute may belog to a given resource.
-     *
-     * @param r the given resource
-     *
-     * @return boolean
-     */
-    public boolean belongsTo(Resource r)
-    {
-        return property.getResourceType().equals(r.getType());
     }
 }

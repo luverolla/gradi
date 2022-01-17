@@ -58,8 +58,8 @@ public class ResourceFilterCustom extends Filter<Resource, Object>
                 return attrBool == providedBool;
 
             case NUMERIC:
-                Float attrNum = Float.parseFloat(attr);
-                List<Float> bounds = (List<Float>) getValue();
+                Double attrNum = Double.parseDouble(attr);
+                List<Double> bounds = (List<Double>) getValue();
 
                 boolean cond = true;
                 if(bounds.get(0) != null)

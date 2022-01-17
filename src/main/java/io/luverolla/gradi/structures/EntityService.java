@@ -231,8 +231,13 @@ public abstract class EntityService<E extends CodedEntity>
 	 */
 	public Set<E> add(Collection<E> data)
 	{
-		for(E e : data) e.setCode(nextCode());
-		return (Set<E>) repo().saveAll(data);
+		for(E e : data)
+		{
+			e.setCode(nextCode());
+			repo().save(e);
+		}
+
+		return new HashSet<>(data);
 	}
 
 	/**

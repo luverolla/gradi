@@ -10,5 +10,8 @@ import java.util.Optional;
 public interface UserRepository extends PagingAndSortingRepository<User, String>
 {
     @Query("select u from User u where u.email = ?1")
-    public Optional<User> findByEmail(String email);
+    Optional<User> findByEmail(String email);
+
+    @Query("select u from User u where u.role = 1")
+    Iterable<User> findAllEditors();
 }

@@ -1,16 +1,15 @@
 package io.luverolla.gradi.filters;
 
-import io.luverolla.gradi.entities.Resource;
 import io.luverolla.gradi.entities.ResourceFile;
 import io.luverolla.gradi.structures.Filter;
 
-import java.util.Set;
+import java.util.Collection;
 
-public class ResourceFileFilterResources extends Filter<ResourceFile, Set<Resource>>
+public class ResourceFileFilterResources extends Filter<ResourceFile, Collection<String>>
 {
     @Override
     public boolean test(ResourceFile entity)
     {
-        return getValue().contains(entity.getResource());
+        return getValue().contains(entity.getResource().getCode());
     }
 }

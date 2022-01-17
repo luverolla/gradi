@@ -13,8 +13,7 @@ CREATE TABLE gradi_messages
     subject character varying(255),
     text text,
     type integer,
-    visibility integer,
-    sender_code character varying(10) NOT NULL
+    visibility integer
 );
 CREATE TABLE gradi_messages_recipients
 (
@@ -27,7 +26,7 @@ CREATE TABLE gradi_resource_attributes
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     value character varying(255),
-    resource_property_name character varying(10) NOT NULL,
+    resource_property_name character varying(255) NOT NULL,
     resource_code character varying(10) NOT NULL
 );
 CREATE TABLE gradi_resource_files
@@ -128,7 +127,6 @@ ALTER TABLE ONLY gradi_messages_recipients ADD CONSTRAINT fk4qoscgmi3hxxcmr3fah1
 ALTER TABLE ONLY gradi_resource_attributes ADD CONSTRAINT fk6u32pgxdp22eun8i5p4xhotex FOREIGN KEY (resource_code) REFERENCES gradi_resources(code);
 ALTER TABLE ONLY gradi_messages_recipients ADD CONSTRAINT fke5bq53qlrctdb6whbrx50d5yu FOREIGN KEY (message_code) REFERENCES gradi_messages(code);
 ALTER TABLE ONLY gradi_resource_permissions ADD CONSTRAINT fkfa5n157xc6wa81g0c29i3gd1i FOREIGN KEY (resource_code) REFERENCES gradi_resources(code);
-ALTER TABLE ONLY gradi_messages ADD CONSTRAINT fkix04rd7np8it5xv9e1udggn1k FOREIGN KEY (sender_code) REFERENCES gradi_users(code);
 ALTER TABLE ONLY gradi_resource_attributes ADD CONSTRAINT fkj9vjqok2kb8bo83e4l6l8n9u1 FOREIGN KEY (resource_property_name) REFERENCES gradi_resource_properties(name);
 ALTER TABLE ONLY gradi_resource_files ADD CONSTRAINT fkmbhyhljf4h1fm7nroqx1svjoc FOREIGN KEY (resource_code) REFERENCES gradi_resources(code);
 ALTER TABLE ONLY gradi_resource_properties ADD CONSTRAINT fkpgawmj58bmkgbo5jmrnii24we FOREIGN KEY (resource_type_code) REFERENCES gradi_resource_types(code);

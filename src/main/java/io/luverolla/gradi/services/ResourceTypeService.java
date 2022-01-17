@@ -104,7 +104,7 @@ public class ResourceTypeService extends EntityService<ResourceType>
             p.setName(typeCode + "#" + p.getName());
         }
 
-        return (Set<ResourceProperty>) propRepo.saveAll(data);
+        return new HashSet<>((List<ResourceProperty>) propRepo.saveAll(data));
     }
 
     /**

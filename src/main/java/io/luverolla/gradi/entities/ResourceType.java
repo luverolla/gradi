@@ -32,7 +32,7 @@ public class ResourceType extends CodedEntity
     @OneToMany(mappedBy = "type", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<Resource> resources;
 
-    @JsonIgnoreProperties({"resourceType"})
+    @JsonIgnoreProperties({"resourceType", "attributes"})
     @OneToMany(mappedBy = "resourceType", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<ResourceProperty> properties;
 }

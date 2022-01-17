@@ -7,6 +7,7 @@ import io.luverolla.gradi.exceptions.ResourceTypeMismatchException;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jsoup.Jsoup;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -40,8 +41,11 @@ public class ResourceComparatorCustom<T extends Comparable<T>> implements Compar
 
         switch(property.getType())
         {
-            case TEXT:
+            case STRING:
                 return attr1.compareToIgnoreCase(attr2);
+
+            case TEXT:
+                return Jsoup.parse(attr1).text().compareToIgnoreCase(Jsoup.parse(attr2).text());
 
             case FIXED: case RESOURCE:
                 String[] str1 = attr1.toLowerCase().split(";");

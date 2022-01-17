@@ -9,8 +9,6 @@ import io.luverolla.gradi.services.ResourceTypeService;
 import io.luverolla.gradi.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +23,6 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -52,11 +47,7 @@ public class AdminController
             return ResponseEntity.badRequest().build();
 
         SortedSet<User> data = userService.get(req);
-        for(User u : data)
-            u.add(linkTo(methodOn(AdminController.class).getUser(u.getCode())).withSelfRel());
-
-        Link all = linkTo(methodOn(AdminController.class).getAllUsers(req)).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(data, all));
+        return ResponseEntity.ok(data);
     }
 
     @GetMapping("/users/{code}")
@@ -64,9 +55,7 @@ public class AdminController
     {
         try {
             User found = userService.get(code);
-
-            Link self = linkTo(methodOn(AdminController.class).getUser(code)).withSelfRel();
-            return ResponseEntity.ok(found.add(self));
+            return ResponseEntity.ok(found);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -77,9 +66,6 @@ public class AdminController
     public ResponseEntity<?> addUsers(@RequestBody Collection<User> data)
     {
         Set<User> saved = userService.add(data);
-        for(User u : saved)
-            u.add(linkTo(methodOn(AdminController.class).getUser(u.getCode())).withSelfRel());
-
         return ResponseEntity.ok(saved);
     }
 
@@ -88,9 +74,7 @@ public class AdminController
     {
         try {
             User saved = userService.update(code, data);
-
-            Link self = linkTo(methodOn(AdminController.class).getUser(code)).withSelfRel();
-            return ResponseEntity.ok(saved.add(self));
+            return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -117,11 +101,7 @@ public class AdminController
 
         try {
             SortedSet<Resource> data = resourceService.get(req);
-            for(Resource r : data)
-                r.add(linkTo(methodOn(AdminController.class).getResource(r.getCode())).withSelfRel());
-
-            Link all = linkTo(methodOn(AdminController.class).getAllResources(req)).withSelfRel();
-            return ResponseEntity.ok(CollectionModel.of(data, all));
+            return ResponseEntity.ok(data);
         }
         catch (InvalidPropertyException e) {
             return ResponseEntity.badRequest().build();
@@ -133,8 +113,7 @@ public class AdminController
     {
         try {
             Resource found = resourceService.get(code);
-            Link self = linkTo(methodOn(AdminController.class).getResource(code)).withSelfRel();
-            return ResponseEntity.ok(found.add(self));
+            return ResponseEntity.ok(found);
         }
         catch(NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -171,11 +150,7 @@ public class AdminController
     {
         try {
             Set<ResourceFile> found = resourceService.get(code).getFiles();
-            for(ResourceFile f : found)
-                f.add(linkTo(methodOn(AdminController.class).getFile(code, f.getCode())).withSelfRel());
-
-            Link all = linkTo(methodOn(AdminController.class).getFiles(code)).withSelfRel();
-            return ResponseEntity.ok(CollectionModel.of(found, all));
+            return ResponseEntity.ok(found);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -187,9 +162,7 @@ public class AdminController
     {
         try {
             ResourceFile saved = resourceService.addFile(code, mpf);
-
-            Link self = linkTo(methodOn(AdminController.class).getFile(code, saved.getCode())).withSelfRel();
-            return ResponseEntity.ok(saved.add(self));
+            return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -219,8 +192,7 @@ public class AdminController
     {
         try {
             ResourceAttribute found = resourceService.getAttribute(resCode, propName);
-            Link self = linkTo(methodOn(AdminController.class).getAttribute(resCode, propName)).withSelfRel();
-            return ResponseEntity.ok(found.add(self));
+            return ResponseEntity.ok(found);
         }
         catch(NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -232,11 +204,7 @@ public class AdminController
     {
         try {
             Set<ResourceAttribute> attrs = resourceService.get(code).getAttributes();
-            for(ResourceAttribute a : attrs)
-                a.add(linkTo(methodOn(AdminController.class).getAttribute(code, a.getProperty().getName())).withSelfRel());
-
-            Link all = linkTo(methodOn(AdminController.class).getResourceAttributes(code)).withSelfRel();
-            return ResponseEntity.ok(CollectionModel.of(attrs, all));
+            return ResponseEntity.ok(attrs);
         }
         catch(NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -248,11 +216,7 @@ public class AdminController
     {
         try {
             Set<ResourceAttribute> saved = resourceService.addAttributes(code, data);
-            for(ResourceAttribute a : data)
-                a.add(linkTo(methodOn(AdminController.class).getAttribute(code, a.getProperty().getName())).withSelfRel());
-
-            Link all = linkTo(methodOn(AdminController.class).getResourceAttributes(code)).withSelfRel();
-            return ResponseEntity.ok(CollectionModel.of(saved, all));
+            return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -264,9 +228,7 @@ public class AdminController
     {
         try {
             ResourceAttribute saved = resourceService.updateAttribute(code, propName, data);
-
-            Link self = linkTo(methodOn(AdminController.class).getAttribute(code, propName)).withSelfRel();
-            return ResponseEntity.ok(saved.add(self));
+            return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -288,10 +250,16 @@ public class AdminController
     @PostMapping("/resources")
     public ResponseEntity<?> addResources(@RequestBody Collection<Resource> data)
     {
-        Set<Resource> saved = resourceService.add(data);
-        for(Resource r : saved)
-            r.add(linkTo(methodOn(AdminController.class).getResource(r.getCode())).withSelfRel());
+        for(Resource r : data)
+        {
+            ResourcePermission p = new ResourcePermission();
+            p.setType(ResourcePermission.Type.FULL);
+            p.setUser(userService.get("0000000000"));
+            p.setResource(r);
+            r.setPermissions(Set.of(p));
+        }
 
+        Set<Resource> saved = resourceService.add(data);
         return ResponseEntity.ok(saved);
     }
 
@@ -300,12 +268,22 @@ public class AdminController
     {
         try {
             Resource saved = resourceService.update(code, data);
-
-            Link self = linkTo(methodOn(AdminController.class).getResource(code)).withSelfRel();
-            return ResponseEntity.ok(saved.add(self));
+            return ResponseEntity.ok(saved);
         }
         catch(NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PutMapping("/resources/{code}/permissions")
+    public ResponseEntity<?> setPermissions(@PathVariable("code") String code, @RequestBody Set<ResourcePermission> data)
+    {
+        try {
+            Set<ResourcePermission> saved = resourceService.setPermissions(code, data);
+            return ResponseEntity.ok(saved);
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -326,9 +304,7 @@ public class AdminController
     {
         try {
             ResourceType found = resourceTypeService.get(code);
-
-            Link self = linkTo(methodOn(AdminController.class).getResourceType(code)).withSelfRel();
-            return ResponseEntity.ok(found.add(self));
+            return ResponseEntity.ok(found);
         }
         catch(NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -342,20 +318,13 @@ public class AdminController
             return ResponseEntity.badRequest().build();
 
         SortedSet<ResourceType> data = resourceTypeService.get(req);
-        for(ResourceType t : data)
-            t.add(linkTo(methodOn(AdminController.class).getResourceType(t.getCode())).withSelfRel());
-
-        Link all = linkTo(methodOn(AdminController.class).getResourcesTypes(req)).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(data, all));
+        return ResponseEntity.ok(data);
     }
 
     @PostMapping("/types")
     public ResponseEntity<?> addResourceTypes(@RequestBody Collection<ResourceType> data)
     {
         Set<ResourceType> saved = resourceTypeService.add(data);
-        for(ResourceType t : saved)
-            t.add(linkTo(methodOn(AdminController.class).getResourceType(t.getCode())).withSelfRel());
-
         return ResponseEntity.ok(saved);
     }
 
@@ -364,9 +333,7 @@ public class AdminController
     {
         try {
             ResourceType saved = resourceTypeService.update(code, type);
-
-            Link self = linkTo(methodOn(AdminController.class).getResourceType(code)).withSelfRel();
-            return ResponseEntity.ok(saved.add(self));
+            return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -390,9 +357,7 @@ public class AdminController
     {
         try {
             ResourceProperty found = resourceTypeService.getProperty(code, propName);
-
-            Link self = linkTo(methodOn(AdminController.class).getProperty(code, propName)).withSelfRel();
-            return ResponseEntity.ok(found.add(self));
+            return ResponseEntity.ok(found);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -404,15 +369,8 @@ public class AdminController
     {
         try {
             ResourceType found = resourceTypeService.get(code);
-
             Set<ResourceProperty> props = found.getProperties();
-            for(ResourceProperty p : props) {
-                String purePropName = p.getName().split("#")[1];
-                p.add(linkTo(methodOn(AdminController.class).getProperty(code, purePropName)).withSelfRel());
-            }
-
-            Link all = linkTo(methodOn(AdminController.class).getProperties(code)).withSelfRel();
-            return ResponseEntity.ok(CollectionModel.of(props, all));
+            return ResponseEntity.ok(props);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -424,13 +382,7 @@ public class AdminController
     {
         try {
             Set<ResourceProperty> saved = resourceTypeService.addProperties(code, data);
-            for(ResourceProperty p : saved) {
-                String purePropName = p.getName().split("#")[1];
-                p.add(linkTo(methodOn(AdminController.class).getProperty(code, purePropName)).withSelfRel());
-            }
-
-            Link all = linkTo(methodOn(AdminController.class).getProperties(code)).withSelfRel();
-            return ResponseEntity.ok(CollectionModel.of(saved, all));
+            return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -442,9 +394,7 @@ public class AdminController
     {
         try {
             ResourceProperty saved = resourceTypeService.updateProperty(code, propName, data);
-
-            Link self = linkTo(methodOn(AdminController.class).getProperty(code, propName)).withSelfRel();
-            return ResponseEntity.ok(saved.add(self));
+            return ResponseEntity.ok(saved);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -468,9 +418,7 @@ public class AdminController
     {
         try {
             Message found = messageService.get(code);
-
-            Link self = linkTo(methodOn(AdminController.class).getMessage(code)).withSelfRel();
-            return ResponseEntity.ok(found.add(self));
+            return ResponseEntity.ok(found);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -481,20 +429,13 @@ public class AdminController
     public ResponseEntity<?> getMessages(@RequestBody EntitySetRequest req)
     {
         SortedSet<Message> data = messageService.get(req);
-        for(Message m : data)
-            m.add(linkTo(methodOn(AdminController.class).getMessage(m.getCode())).withSelfRel());
-
-        Link all = linkTo(methodOn(AdminController.class).getMessages(req)).withSelfRel();
-        return ResponseEntity.ok(CollectionModel.of(data, all));
+        return ResponseEntity.ok(data);
     }
 
     @PostMapping("/messages")
     public ResponseEntity<?> addMessages(@RequestBody Collection<Message> data)
     {
         Set<Message> saved = messageService.add(data);
-        for(Message m : saved)
-            m.add(linkTo(methodOn(AdminController.class).getMessage(m.getCode())).withSelfRel());
-
         return ResponseEntity.ok(saved);
     }
 

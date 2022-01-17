@@ -20,7 +20,7 @@ public class ResourceFile extends CodedEntity
 	@Column(nullable = false)
 	private String name;
 	
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+	@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resource_code", nullable = false)
     private Resource resource;
 }

@@ -62,6 +62,16 @@ public class UserService extends EntityService<User>
     }
 
     @Override
+    public Set<User> add(Collection<User> data)
+    {
+        Set<User> saved = super.add(data);
+        for(User u : saved)
+            mailingService.notifyUserAdd(u);
+
+        return saved;
+    }
+
+    @Override
     public User update(String code, User data)
     {
         Optional<User> tg = repo.findById(code);
@@ -72,9 +82,9 @@ public class UserService extends EntityService<User>
 
         // mail notification only if visible significant data changes
         // both old and new email address are contacted
-        if( !data.getFullName().equals(found.getFullName()) ||
-                !data.getEmail().equals(found.getEmail()) ||
-                !data.getRole().equals(found.getRole())
+        // recipientName contains name, surname and email address
+        if( !data.getRecipientName().equals(found.getRecipientName()) ||
+            !data.getRole().equals(found.getRole())
         )
             mailingService.notifyUserUpdate(code, found.getEmail(), data);
 
@@ -82,9 +92,6 @@ public class UserService extends EntityService<User>
         found.setSurname(data.getSurname());
         found.setEmail(data.getEmail());
         found.setDescription(data.getDescription());
-        found.setPassword(data.getPassword());
-        found.setRole(data.getRole());
-        found.setPermissions(data.getPermissions());
 
         return repo.save(found);
     }

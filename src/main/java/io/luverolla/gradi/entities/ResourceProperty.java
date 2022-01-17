@@ -1,13 +1,17 @@
 package io.luverolla.gradi.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.luverolla.gradi.structures.CodedEntity;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.hateoas.RepresentationModel;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
@@ -20,7 +24,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourceProperty extends RepresentationModel<ResourceProperty>
+public class ResourceProperty
 {
     /**
      * Property's value type
@@ -37,11 +41,20 @@ public class ResourceProperty extends RepresentationModel<ResourceProperty>
     @Id
     private String name;
 
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private OffsetDateTime updatedAt;
+
     @Column(nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private Type type;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JsonIgnoreProperties({"resources", "properties"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="resource_type_code", nullable = false)
     private ResourceType resourceType;
 
@@ -59,6 +72,6 @@ public class ResourceProperty extends RepresentationModel<ResourceProperty>
             return false;
 
         ResourceProperty that = (ResourceProperty) o;
-        return resourceType.equals(that.getResourceType()) && name.equals(that.getName());
+        return name.equals(that.getName());
     }
 }

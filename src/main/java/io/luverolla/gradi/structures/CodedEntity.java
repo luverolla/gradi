@@ -5,7 +5,6 @@ import lombok.Setter;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 
@@ -20,7 +19,7 @@ import java.time.OffsetDateTime;
 @MappedSuperclass
 @Getter
 @Setter
-public class CodedEntity extends RepresentationModel<CodedEntity> implements DatedEntity, Comparable<CodedEntity>
+public class CodedEntity implements DatedEntity, Comparable<CodedEntity>
 {
     @Id
     @Column(nullable = false, unique = true, length = 10)

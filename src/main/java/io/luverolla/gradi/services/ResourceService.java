@@ -8,17 +8,10 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import io.luverolla.gradi.comparators.*;
-import io.luverolla.gradi.entities.ResourceAttribute;
-import io.luverolla.gradi.entities.ResourceFile;
-import io.luverolla.gradi.entities.ResourceProperty;
+import io.luverolla.gradi.entities.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
-import io.luverolla.gradi.exceptions.ResourceTypeMismatchException;
 import io.luverolla.gradi.filters.*;
-import io.luverolla.gradi.repositories.ResourceAttributeRepository;
-import io.luverolla.gradi.repositories.ResourceFileRepository;
-import io.luverolla.gradi.repositories.ResourcePropertyRepository;
-import io.luverolla.gradi.entities.Resource;
-import io.luverolla.gradi.repositories.ResourceRepository;
+import io.luverolla.gradi.repositories.*;
 import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.Filter;
 
@@ -45,6 +38,9 @@ public class ResourceService extends EntityService<Resource>
 
 	@Autowired
 	private ResourceFileRepository fileRepo;
+
+	@Autowired
+	private ResourcePermissionRepository permRepo;
 
 	@Autowired
 	public PagingAndSortingRepository<Resource, String> repo()
@@ -75,7 +71,7 @@ public class ResourceService extends EntityService<Resource>
 			Map.entry("createdAt", new EntityFilterCreatedAt<>()),
 			Map.entry("updatedAt", new EntityFilterUpdatedAt<>()),
 			Map.entry("type", new ResourceFilterType()),
-			Map.entry("permissions", new ResourceFilterPermissions())
+			Map.entry("permissions", new ResourceFilterPermissionsUsers())
 		);
 	}
 
@@ -129,9 +125,8 @@ public class ResourceService extends EntityService<Resource>
 		found.setVisibility(data.getVisibility());
 		found.setDescription(data.getDescription());
 		found.setParent(data.getParent());
-		found.setType(data.getType());
 
-		return found;
+		return repo.save(found);
 	}
 
 	/**
@@ -165,14 +160,15 @@ public class ResourceService extends EntityService<Resource>
 
 		for(ResourceAttribute a : data)
 		{
-			if(!a.belongsTo(found))
-				throw new ResourceTypeMismatchException();
-
 			a.setResource(found);
-			a.setName(resCode + "#" + a.getProperty().getName());
+			a.setName(resCode + "#" + a.getName());
 		}
 
-		return (Set<ResourceAttribute>) attrRepo.saveAll(data);
+		Set<ResourceAttribute> saved = new HashSet<>(data);
+		found.setAttributes(saved);
+		repo.save(found);
+
+		return saved;
 	}
 
 	/**
@@ -235,7 +231,7 @@ public class ResourceService extends EntityService<Resource>
 	 */
 	public File getFileObject(ResourceFile rf)
 	{
-		File f = Paths.get(uploadDir + "/" + rf.getCode()).toFile();
+		File f = Paths.get(uploadDir + "/" + rf.getName()).toFile();
 		if(!f.exists())
 			throw new NoSuchElementException();
 
@@ -268,7 +264,7 @@ public class ResourceService extends EntityService<Resource>
 		file.setName(code + "." + ext);
 		file.setResource(get(resCode));
 
-		Path path = Paths.get(uploadDir + file.getName());
+		Path path = Paths.get(uploadDir + "/" + file.getName());
 		Files.write(path, mpf.getBytes());
 
 		return fileRepo.save(file);
@@ -291,5 +287,27 @@ public class ResourceService extends EntityService<Resource>
 		if(!file.delete()) throw new IOException();
 
 		fileRepo.delete(found);
+	}
+
+	/**
+	 * Sets permissions to resource
+	 *
+	 * Deletes all previously stored permissions and readd them from zero
+	 *
+	 * @param resCode resource's code
+	 * @param data permission set
+	 *
+	 * @throws NoSuchElementException if resource doesn't exist
+	 * @return updated resource, if it exists
+	 */
+	public Set<ResourcePermission> setPermissions(String resCode, Set<ResourcePermission> data)
+	{
+		Resource found = get(resCode);
+		permRepo.resetResource(found);
+
+		for(ResourcePermission p : data)
+			p.setResource(found);
+
+		return new HashSet<>((List<ResourcePermission>) permRepo.saveAll(data));
 	}
 }

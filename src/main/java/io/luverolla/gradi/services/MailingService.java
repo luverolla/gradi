@@ -54,6 +54,7 @@ public class MailingService
 
         // testing purpose fragment (TPF)
         Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.debug", "true");
         // end TPF
 
