@@ -3,9 +3,8 @@
 This is the Github repository for the GRADI software.
 
 <blockquote>
-    <strong>
-        ATTENTION: At the time I'm writing, the software is still incomplete. When all the work is finished, this message will disappear
-    </strong>
+    <strong>Developement status</strong>
+    <p>RESTful backend is complete. I will do some bugfixing, and then, move on webapp frontend</p>
 </blockquote>
 
 GRADI stands for _**GR**ande **A**rchivio **DI**gitale_, that can be translated in english as _Great Digital Archive_. As the name suggests, it is a software for management, editing and consultation of digital resources of all kinds.
