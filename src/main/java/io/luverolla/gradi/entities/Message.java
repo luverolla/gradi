@@ -1,7 +1,5 @@
 package io.luverolla.gradi.entities;
 
-import io.luverolla.gradi.structures.CodedEntity;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,5 +35,10 @@ public class Message extends CodedEntity
     private String text;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(
+        name = "gradi_messages_recipients",
+        joinColumns = { @JoinColumn(name = "user_code") },
+        inverseJoinColumns = { @JoinColumn(name = "message_code") }
+    )
     private Set<User> recipients;
 }

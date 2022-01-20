@@ -1,4 +1,4 @@
-package io.luverolla.gradi.structures;
+package io.luverolla.gradi.entities;
 
 import java.time.OffsetDateTime;
 

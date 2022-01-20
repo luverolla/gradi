@@ -2,8 +2,6 @@ package io.luverolla.gradi.entities;
 
 import javax.persistence.*;
 
-import io.luverolla.gradi.structures.CodedEntity;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

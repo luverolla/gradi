@@ -18,7 +18,7 @@ CREATE TABLE gradi_messages
 CREATE TABLE gradi_messages_recipients
 (
     message_code character varying(10) NOT NULL,
-    recipients_code character varying(10) NOT NULL
+    user_code character varying(10) NOT NULL
 );
 CREATE TABLE gradi_resource_attributes
 (
@@ -40,6 +40,8 @@ CREATE TABLE gradi_resource_files
 CREATE TABLE gradi_resource_permissions
 (
     index bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
     type integer,
     resource_code character varying(10) NOT NULL,
     user_code character varying(10) NOT NULL
@@ -106,7 +108,7 @@ SELECT pg_catalog.setval('gradi_resource_permission_sequence', 1, false);
 
 -- Create primary keys
 ALTER TABLE ONLY gradi_messages ADD CONSTRAINT gradi_messages_pkey PRIMARY KEY (code);
-ALTER TABLE ONLY gradi_messages_recipients ADD CONSTRAINT gradi_messages_recipients_pkey PRIMARY KEY (message_code, recipients_code);
+ALTER TABLE ONLY gradi_messages_recipients ADD CONSTRAINT gradi_messages_recipients_pkey PRIMARY KEY (message_code, user_code);
 ALTER TABLE ONLY gradi_resource_attributes ADD CONSTRAINT gradi_resource_attributes_pkey PRIMARY KEY (name);
 ALTER TABLE ONLY gradi_resource_files ADD CONSTRAINT gradi_resource_files_pkey PRIMARY KEY (code);
 ALTER TABLE ONLY gradi_resource_permissions ADD CONSTRAINT gradi_resource_permissions_pkey PRIMARY KEY (index);
@@ -123,7 +125,7 @@ ALTER TABLE ONLY gradi_users ADD CONSTRAINT uk_ecpe2bu618juq1qlweh8feg0 UNIQUE (
 -- Create foreign keys
 ALTER TABLE ONLY gradi_resource_permissions ADD CONSTRAINT fk1hwkmi6odyl1vh41r38kdgdm1 FOREIGN KEY (user_code) REFERENCES gradi_users(code);
 ALTER TABLE ONLY gradi_resources ADD CONSTRAINT fk4qfe7lm3w4cu7cuivw5aa407o FOREIGN KEY (parent_resource_code) REFERENCES gradi_resources(code);
-ALTER TABLE ONLY gradi_messages_recipients ADD CONSTRAINT fk4qoscgmi3hxxcmr3fah1w6csm FOREIGN KEY (recipients_code) REFERENCES gradi_users(code);
+ALTER TABLE ONLY gradi_messages_recipients ADD CONSTRAINT fk4qoscgmi3hxxcmr3fah1w6csm FOREIGN KEY (user_code) REFERENCES gradi_users(code);
 ALTER TABLE ONLY gradi_resource_attributes ADD CONSTRAINT fk6u32pgxdp22eun8i5p4xhotex FOREIGN KEY (resource_code) REFERENCES gradi_resources(code);
 ALTER TABLE ONLY gradi_messages_recipients ADD CONSTRAINT fke5bq53qlrctdb6whbrx50d5yu FOREIGN KEY (message_code) REFERENCES gradi_messages(code);
 ALTER TABLE ONLY gradi_resource_permissions ADD CONSTRAINT fkfa5n157xc6wa81g0c29i3gd1i FOREIGN KEY (resource_code) REFERENCES gradi_resources(code);

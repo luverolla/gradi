@@ -24,7 +24,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourceProperty
+public class ResourceProperty implements DatedEntity
 {
     /**
      * Property's value type

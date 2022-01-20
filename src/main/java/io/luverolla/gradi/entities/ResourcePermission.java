@@ -20,7 +20,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourcePermission
+public class ResourcePermission implements DatedEntity
 {
     public enum Type { READ, WRITE, FULL };
 

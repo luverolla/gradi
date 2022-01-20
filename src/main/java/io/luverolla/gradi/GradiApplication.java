@@ -12,6 +12,9 @@ import io.luverolla.gradi.entities.User;
 import io.luverolla.gradi.repositories.UserRepository;
 import io.luverolla.gradi.exceptions.CorruptedDatabaseException;
 
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 @SpringBootApplication
@@ -22,6 +25,9 @@ public class GradiApplication
 
 	@Value("${gradi.admin.password}")
 	private String adminPassword;
+
+	@Value("${gradi.system.directories.upload}")
+	private String uploadDirectory;
 
 	@Autowired
 	private PasswordEncoder encoder;
@@ -49,4 +55,15 @@ public class GradiApplication
 			repo.save(admin);
     	};
     }
+
+	@Bean
+	public CommandLineRunner checkUploadFolder()
+	{
+		return (String[] args) ->
+		{
+			// if provided upload folder does not exist, throw exception
+			if(!Files.exists(Path.of(uploadDirectory)))
+				throw new FileNotFoundException();
+		};
+	}
 }

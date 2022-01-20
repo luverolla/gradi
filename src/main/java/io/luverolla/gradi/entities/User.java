@@ -3,8 +3,6 @@ package io.luverolla.gradi.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import io.luverolla.gradi.structures.CodedEntity;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,6 +44,11 @@ public class User extends CodedEntity
     private Set<ResourcePermission> permissions;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(
+        name = "gradi_messages_recipients",
+        joinColumns = { @JoinColumn(name = "message_code") },
+        inverseJoinColumns = { @JoinColumn(name = "user_code") }
+    )
     private Set<Message> receivedMessages;
 
     @JsonIgnore

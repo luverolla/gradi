@@ -27,7 +27,7 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourceAttribute
+public class ResourceAttribute implements DatedEntity
 {
     @Id
     private String name;

@@ -3,6 +3,7 @@ package io.luverolla.gradi.structures;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.luverolla.gradi.entities.CodedEntity;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.exceptions.NoAvailableCodeException;
 import io.luverolla.gradi.rest.EntitySetRequest;
