@@ -15,8 +15,7 @@ import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.repositories.*;
 import io.luverolla.gradi.rest.EntitySetRequest;
-import io.luverolla.gradi.structures.EntityService;
-import io.luverolla.gradi.structures.Filter;
+import io.luverolla.gradi.filters.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

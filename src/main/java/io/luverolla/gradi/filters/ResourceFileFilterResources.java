@@ -1,7 +1,6 @@
 package io.luverolla.gradi.filters;
 
 import io.luverolla.gradi.entities.ResourceFile;
-import io.luverolla.gradi.structures.Filter;
 
 import java.util.Collection;
 

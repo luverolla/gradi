@@ -1,4 +1,4 @@
-package io.luverolla.gradi.structures;
+package io.luverolla.gradi.filters;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

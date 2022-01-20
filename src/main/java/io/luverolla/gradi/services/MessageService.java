@@ -20,8 +20,7 @@ import io.luverolla.gradi.filters.MessageFilterText;
 import io.luverolla.gradi.repositories.MessageRepository;
 import io.luverolla.gradi.repositories.UserRepository;
 import io.luverolla.gradi.rest.EntitySetRequest;
-import io.luverolla.gradi.structures.EntityService;
-import io.luverolla.gradi.structures.Filter;
+import io.luverolla.gradi.filters.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.PagingAndSortingRepository;

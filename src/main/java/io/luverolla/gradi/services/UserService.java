@@ -5,7 +5,6 @@ import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +12,7 @@ import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.entities.User;
 import io.luverolla.gradi.repositories.UserRepository;
-import io.luverolla.gradi.structures.EntityService;
-import io.luverolla.gradi.structures.Filter;
+import io.luverolla.gradi.filters.Filter;
 
 @Service
 public class UserService extends EntityService<User>
