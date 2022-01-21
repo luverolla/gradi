@@ -136,3 +136,112 @@ When a user requests to add a resource attribute, it provides the related proper
 Then, the server prepends to this name, the resource's code and a pound sign (`#`).
 So, for example, if user wants to set the property `author` to the resource with code `01A778BF45`,
 the generated attribute's name will be: `01A778BF45#author`.
+
+### ResourceFile
+
+This entity represent a file attached to a resource.
+Its properties are:
+* `code`: unique code for each object
+* `name`: filename with extension
+* `resource`: resource at which the file belongs
+
+The system automatically sets the file's name as its code plus the extension.
+
+## Coding system
+
+To ensure non-ambiguous identification, various systems are used among entities:
+
+| Field   | Description                                                                        | Formula                   |
+|---------|------------------------------------------------------------------------------------|---------------------------|
+| `code`  | value of current timestamp translated to the year 2000, encoded in a base36 system | `currTime() - YEAR_2000`  |
+| `name`  | full name as combination of other entity's code and pure name                      | `{entityCode}#{pureName}` |
+| `index` | auto-incremented database index                                                    | N/A                       |
+
+The `YEAR_2000` is the timestamp UNIX, in milliseconds, of the date: `2000-01-01T00:00:00+00:00`.
+The base36 system extends hexadecimal system, by adding the other latin letters.
+
+All entities using `code` as unique index are subclass of `CodedEntity`.
+Unique indexes are automatically set by the system, and, eventual 
+user-provided values for such fields are ignored.
+
+## Security
+
+### Authentication
+
+Authentication is performed through a basic username/password system, with
+the email acting as username. All passwords are stored encoded with BCrypt.
+
+Once successfully logged in, a JWT token is provided to the client application.
+It must be set as request header and expires after a given time.
+These two information are sent as response after authentication, together with the token,
+and can be changed by the administrator, via the `application.properties` file.
+
+### Authorization
+
+The JWT token stores information about the user, such as its role. So, the
+system can always know if the authenticated user has permission to access certain resources.
+If it isn't the case, a `403 Forbidden` error is sent back as response.
+
+## Data manipulation
+
+The GRADI system performs some data manipulation according to client request.
+This is done via three operations: paging, filtering and sorting, and,
+the client can adjust request parameter via an `EntitySetRequest` object.
+
+### Paging
+
+Paging system relies entirely on the JPA `PagingAndSortingRepository` interface,
+and is executed according to the `page` and `limit` parameters of the request object.
+Both parameters are integer numbers, and are required to perform a correct request.
+
+The `page` parameter is zero-based (as indices in almost any programming language),
+and tells what "group" of objects the client want to retrieve. The size of this "group"
+is exactly the value of the `limit` parameter.
+
+So, given such parameters, the client will retrieve data in the zero-based
+range `[page*limit, (page+1)*limit[`. Note that the lower bound is included,
+while the upper bound is excluded.
+
+Data is sent even if it fills only a part of such range. While, if parameters
+are malformed or range goes over available data, a `404 Not Found` error may be sent.
+
+### Filtering
+
+Filtering is done according to the `filter` parameter of the request object.
+This is a map, and each entry contains the name of the property the client wants to filter by,
+and an auxiliary value that may be used as "reference value".
+
+For each entry, the property name is mapped to a filter class, and then,
+result of individual filters are chained together.
+
+The parameter to filter by can also be a resource custom property's name.
+The server checks if this property exists, and if not, send an error back.
+
+According to the property's type, "reference value" and filtering routines change:
+
+| Type                | Filter condition    | Reference value         | Reference value type   |
+|---------------------|---------------------|-------------------------|------------------------|
+| `STRING`, `TEXT`    | includes substring? | substring               | `String`               |
+| `NUMERIC`           | is in range?        | list of two bounds      | `List<Double>`         |
+| `DATETIME`          | is in range?        | list of two bounds      | `List<OffsetDateTime>` |
+| `FIXED`, `RESOURCE` | is one of list?     | list of possible values | `List<String>`         |
+
+For the `TEXT` type, automatic HTML parsing is performed before filtering.
+Properties with type `STRING` are considered plain-text.
+
+### Sorting
+
+Sorting is done according to the `orders` parameter of the request object.
+This is a map, and each entry contains the name of the property the client wants to sort by,
+and the sorting way, that can be `asc` or `desc`. If an invalid string is provided, the system
+automatically converts it to `asc`.
+
+Each map's entry has the property mapped with a `Comparator` class. In case of descending
+way, the `reverse()` method is applied. Individual results are then chained together.
+Order of map's entries here is important, since it decides how the data will be sorted to the client.
+
+For string-like properties, case-insensitive lexicographic sorting is performed.
+Numbers and timestamps are naturally sorted.
+
+For the `TEXT` type, automatic HTML parsing is performed before filtering.
+Properties with type `STRING` are considered plain-text.
