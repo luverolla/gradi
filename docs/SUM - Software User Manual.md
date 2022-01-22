@@ -117,7 +117,7 @@ If all above steps has been followed correctly and in order, the application sho
 started without errors. To check that, open a browser, and go to this address:
 
 ```
-http://localhost:9000/public/self-test
+http://localhost:9000/api/public/self-test
 ```
 
 If the message `GRADI has been installed correctly on this system`, appears,
