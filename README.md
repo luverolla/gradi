@@ -1,44 +1,42 @@
 # GRADI
 
-This is the Github repository for the GRADI software.
+This is the GitHub repository for the GRADI software.
 
 <blockquote>
-    <strong>Developement status</strong>
-    <p>RESTful backend is complete and no visible bugs/error have been found</p>
+    <strong>Development status</strong>
+    <p>REST backend is complete and no visible bugs/error have been found</p>
     <p>
         Documentation writing is in progress. Once it's complete,
         I will move to frontend webapp and this message will disappear.
     </p>
 </blockquote>
 
-GRADI stands for _**GR**ande **A**rchivio **DI**gitale_, that can be translated in english
-as _Great Digital Archive_. It's a software for management, editing and
+GRADI (italian short of _**GR**ande **A**rchivio **DI**gitale_, in english
+_Great Digital Archive_) it's a software for management, editing and
 consultation of digital resources of all kinds.
 
-Registered users marked as editors can create, upload and perform all kind of operations
-on their own resources, such as assigning read and/or write permissions.
+Registered users marked as editors, can create and manage resources,
+assigning read or write permissions to other editors and make them 
+available for consultation for non-editor users, and also for
+everyone outside the platform too.
 
-Non-editor users cannot create or edit resources, but they can view and consult them,
-if creator make them public or assign them read permissions.
-
-A resource in GRADI is composed by one or more physical files, of different types too.
+A resource in GRADI is composed one or more physical files, of different types too.
 It's uniquely identified by its code and is provided with a name and an optional description.
-Other custom properties can be added by providing a resource type.
+Additional properties can be added specifying a resource type.
 
-Resource types are dynamically added (only by administrator), and provided of a set
-of properties each one with its value type, such as string, numeric, datetime, boolean or text.
-A unique code is automatically generated. Providing the right resource types is important
-since their properties are used as search filters and sorting parameters.
+Resource types are dynamically added by administrator, and provided of a set
+of properties each one with its value type (string, numeric, datetime, ...).
+A unique name is automatically generated.
 
-The software is provided with a server, listening on `localhost:9000` and consists of
-a secured RESTful API and a web interface, in order to allow other developers to build 
-frontend application without too much effort. The endpoints are `localhost:9000/web`
-for the web interface and `localhost:9000/api/` for the RESTful API.
+The software is provided with a backend server, listening on `localhost:9000` and consists of
+a secured REST API, listening on `localhost:9000/api`, and a web interface, listening on
+`localhost:9000/web/`.
 
 ## Documentation
 
 Inside `/docs` folder, the following documents are provided:
-* __RAD - REST API Documentation__: lists RESTful endpoints, tells how to make
+
+* __RAD - REST API Documentation__: lists REST endpoints, tells how to make
   requests and how to understand responses. Mainly intended for frontend or mobile
   developers who want to make client applications.
 * __SDD - Software Design Document__: illustrates the idea behind this software,
@@ -48,7 +46,7 @@ Inside `/docs` folder, the following documents are provided:
   solve errors or conflicts. Not really intended for developers, but for people who
   want to install and use the software locally.
 
-In the same folder, under `/docs/api` subdirectory, the API JavaDocs' pages are hosted.
+In the same folder, under `/docs/apidocs` subdirectory, the API JavaDocs' pages are hosted.
 
 ## Contribution
 

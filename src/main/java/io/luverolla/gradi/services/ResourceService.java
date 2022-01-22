@@ -14,6 +14,7 @@ import io.luverolla.gradi.entities.ResourcePermission.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.repositories.*;
+import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.EntitySetRequest;
 import io.luverolla.gradi.structures.Filter;
 

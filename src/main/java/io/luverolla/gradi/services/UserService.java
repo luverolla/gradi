@@ -3,6 +3,7 @@ package io.luverolla.gradi.services;
 import java.security.Principal;
 import java.util.*;
 
+import io.luverolla.gradi.structures.EntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;

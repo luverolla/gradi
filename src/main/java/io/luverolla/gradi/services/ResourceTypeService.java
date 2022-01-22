@@ -6,6 +6,7 @@ import io.luverolla.gradi.entities.ResourceType;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.repositories.ResourcePropertyRepository;
 import io.luverolla.gradi.repositories.ResourceTypeRepository;
+import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;

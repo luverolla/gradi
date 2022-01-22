@@ -19,6 +19,7 @@ import io.luverolla.gradi.filters.MessageFilterType;
 import io.luverolla.gradi.filters.MessageFilterText;
 import io.luverolla.gradi.repositories.MessageRepository;
 import io.luverolla.gradi.repositories.UserRepository;
+import io.luverolla.gradi.structures.EntityService;
 import io.luverolla.gradi.structures.EntitySetRequest;
 import io.luverolla.gradi.structures.Filter;
 

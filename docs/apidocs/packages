@@ -1,0 +1,11 @@
+io.luverolla.gradi.comparators
+io.luverolla.gradi.controllers
+io.luverolla.gradi.entities
+io.luverolla.gradi.exceptions
+io.luverolla.gradi.filters
+io.luverolla.gradi
+io.luverolla.gradi.repositories
+io.luverolla.gradi.rest
+io.luverolla.gradi.security
+io.luverolla.gradi.services
+io.luverolla.gradi.structures

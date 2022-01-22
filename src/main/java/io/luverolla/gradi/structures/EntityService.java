@@ -1,15 +1,10 @@
-package io.luverolla.gradi.services;
+package io.luverolla.gradi.structures;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.luverolla.gradi.structures.ChainedComparator;
-import io.luverolla.gradi.structures.CodedEntity;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.exceptions.NoAvailableCodeException;
-import io.luverolla.gradi.structures.ChainedFilter;
-import io.luverolla.gradi.structures.Filter;
-import io.luverolla.gradi.structures.EntitySetRequest;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.PagingAndSortingRepository;
