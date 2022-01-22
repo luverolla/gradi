@@ -1,6 +1,7 @@
 package io.luverolla.gradi.filters;
 
 import io.luverolla.gradi.entities.Message;
+import io.luverolla.gradi.structures.Filter;
 
 import java.util.Set;
 

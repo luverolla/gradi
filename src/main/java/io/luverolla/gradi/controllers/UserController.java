@@ -3,7 +3,7 @@ package io.luverolla.gradi.controllers;
 import io.luverolla.gradi.entities.*;
 import io.luverolla.gradi.entities.ResourcePermission.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
-import io.luverolla.gradi.rest.EntitySetRequest;
+import io.luverolla.gradi.structures.EntitySetRequest;
 import io.luverolla.gradi.services.MessageService;
 import io.luverolla.gradi.services.ResourceService;
 import io.luverolla.gradi.services.ResourceTypeService;

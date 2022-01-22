@@ -12,7 +12,7 @@ import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.filters.*;
 import io.luverolla.gradi.entities.User;
 import io.luverolla.gradi.repositories.UserRepository;
-import io.luverolla.gradi.filters.Filter;
+import io.luverolla.gradi.structures.Filter;
 
 @Service
 public class UserService extends EntityService<User>

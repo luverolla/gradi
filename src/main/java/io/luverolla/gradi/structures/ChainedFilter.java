@@ -1,4 +1,4 @@
-package io.luverolla.gradi.filters;
+package io.luverolla.gradi.structures;
 
 import java.util.Collection;
 

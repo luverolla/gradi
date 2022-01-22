@@ -1,4 +1,4 @@
-package io.luverolla.gradi.entities;
+package io.luverolla.gradi.structures;
 
 import lombok.Getter;
 import lombok.Setter;

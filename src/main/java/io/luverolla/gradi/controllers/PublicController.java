@@ -44,7 +44,7 @@ public class PublicController
      * @throws AuthenticationException thrown if credentials are missing or wrong
      */
     @PostMapping("/auth")
-    public ResponseEntity<?> login(@RequestBody AuthenticationRequest req)
+    public ResponseEntity<?> auth(@RequestBody AuthenticationRequest req)
     { 
     	String token;
     	Authentication auth;

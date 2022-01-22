@@ -1,6 +1,7 @@
 package io.luverolla.gradi.filters;
 
-import io.luverolla.gradi.entities.DatedEntity;
+import io.luverolla.gradi.structures.DatedEntity;
+import io.luverolla.gradi.structures.Filter;
 
 import java.time.OffsetDateTime;
 import java.util.List;

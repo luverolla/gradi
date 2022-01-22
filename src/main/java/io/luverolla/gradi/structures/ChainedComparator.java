@@ -1,4 +1,4 @@
-package io.luverolla.gradi.comparators;
+package io.luverolla.gradi.structures;
 
 import java.util.Collection;
 import java.util.Comparator;

@@ -3,13 +3,13 @@ package io.luverolla.gradi.services;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.luverolla.gradi.comparators.ChainedComparator;
-import io.luverolla.gradi.entities.CodedEntity;
+import io.luverolla.gradi.structures.ChainedComparator;
+import io.luverolla.gradi.structures.CodedEntity;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.exceptions.NoAvailableCodeException;
-import io.luverolla.gradi.filters.ChainedFilter;
-import io.luverolla.gradi.filters.Filter;
-import io.luverolla.gradi.rest.EntitySetRequest;
+import io.luverolla.gradi.structures.ChainedFilter;
+import io.luverolla.gradi.structures.Filter;
+import io.luverolla.gradi.structures.EntitySetRequest;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.PagingAndSortingRepository;

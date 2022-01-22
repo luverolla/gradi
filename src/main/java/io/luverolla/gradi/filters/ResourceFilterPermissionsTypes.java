@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import io.luverolla.gradi.entities.Resource;
 import io.luverolla.gradi.entities.ResourcePermission;
+import io.luverolla.gradi.structures.Filter;
 
 /**
  * Filter resource by permissions types

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.luverolla.gradi.exceptions.ResourceTypeMismatchException;
 
+import io.luverolla.gradi.structures.CodedEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

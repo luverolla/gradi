@@ -1,4 +1,4 @@
-package io.luverolla.gradi.rest;
+package io.luverolla.gradi.structures;
 
 import java.util.Map;
 
@@ -23,16 +23,4 @@ public class EntitySetRequest
     private Integer limit;
     private Map<String, String> orders;
     private Map<String, Object> filters;
-
-    /**
-     * Request to get all elements ordered by code ascending
-     * @return {@link EntitySetRequest} object
-     */
-    public static EntitySetRequest simple()
-    {
-        EntitySetRequest req = new EntitySetRequest();
-        req.setOrders(Map.of("code", "asc"));
-
-        return req;
-    }
 }

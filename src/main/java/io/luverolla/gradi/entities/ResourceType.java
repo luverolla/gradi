@@ -2,6 +2,7 @@ package io.luverolla.gradi.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.luverolla.gradi.structures.CodedEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

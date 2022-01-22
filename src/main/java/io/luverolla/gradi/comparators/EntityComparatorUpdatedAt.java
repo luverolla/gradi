@@ -1,6 +1,6 @@
 package io.luverolla.gradi.comparators;
 
-import io.luverolla.gradi.entities.DatedEntity;
+import io.luverolla.gradi.structures.DatedEntity;
 
 import java.util.Comparator;
 
