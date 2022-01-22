@@ -15,6 +15,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/public")
 public class PublicController
@@ -62,5 +65,23 @@ public class PublicController
         
         AuthenticationResponse res = new AuthenticationResponse(tokenHeader, token, expiration);
         return ResponseEntity.ok(res);
+    }
+
+    /**
+     * Performs a self test
+     *
+     * If nothing is gone wrong in the installation steps, this must always return `200 OK`
+     *
+     * @return Test result and current datetime
+     */
+    @GetMapping("/self-test")
+    public ResponseEntity<?> selfTest()
+    {
+        Map<String, String> result = Map.of(
+            "message", "GRADI has been installed correctly on this system",
+            "datetime", OffsetDateTime.now().toString()
+        );
+
+        return ResponseEntity.ok(result);
     }
 }
