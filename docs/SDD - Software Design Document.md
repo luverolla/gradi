@@ -229,6 +229,12 @@ According to the property's type, "reference value" and filtering routines chang
 For the `TEXT` type, automatic HTML parsing is performed before filtering.
 Properties with type `STRING` are considered plain-text.
 
+For the lists of bounds, indicated as `[b1, b2]`, the following rules apply:
+* both `null`: undefined behaviour
+* only first `null`: condition is `value <= b2`
+* only second `null`: condition is `value >= b1`
+* both non-null: condition is `value >= b1 && value <= b2`
+
 ### Sorting
 
 Sorting is done according to the `orders` parameter of the request object.
