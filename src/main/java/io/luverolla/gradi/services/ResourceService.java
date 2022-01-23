@@ -134,7 +134,7 @@ public class ResourceService extends EntityService<Resource>
 	}
 
 	/**
-	 * Gets all resources that a given user is authorized to read/write
+	 * Gets all resources that a given user is authorized to access
 	 *
 	 * @param u given user
 	 * @param min lowest permission needed to access resource
@@ -151,7 +151,7 @@ public class ResourceService extends EntityService<Resource>
 			min.ordinal() > Type.READ.ordinal();
 
 		Predicate<Resource> userHasPermission = r ->
-			r.getPermissions().stream().noneMatch(p ->
+			r.getPermissions().stream().anyMatch(p ->
 				p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal()
 			);
 
@@ -165,7 +165,7 @@ public class ResourceService extends EntityService<Resource>
 	}
 
 	/**
-	 * Gets single resource by its code only if a given user is authorized to read
+	 * Gets single resource by its code only if a given user is authorized to access
 	 *
 	 * @param u the given user
 	 * @param min lowest permission needed to access resource
@@ -183,7 +183,7 @@ public class ResourceService extends EntityService<Resource>
 			min.ordinal() > Type.READ.ordinal();
 
 		Predicate<Resource> userHasPermission = r ->
-			r.getPermissions().stream().noneMatch(p ->
+			r.getPermissions().stream().anyMatch(p ->
 				p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal()
 			);
 

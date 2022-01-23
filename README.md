@@ -4,10 +4,7 @@ This is the GitHub repository for the GRADI software.
 
 > __Development status__
 >
-> REST backend is complete and no visible bugs/error have been found
-> 
-> Documentation writing is in progress. Once it's complete,
-> I will move to frontend webapp and this message will disappear.
+> Working on webapp
 
 GRADI (italian short of _**GR**ande **A**rchivio **DI**gitale_, in english
 _Great Digital Archive_) it's a software for management, editing and
