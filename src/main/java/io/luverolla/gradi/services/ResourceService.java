@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 import io.luverolla.gradi.comparators.*;
 import io.luverolla.gradi.entities.*;
+import io.luverolla.gradi.entities.Resource.*;
 import io.luverolla.gradi.entities.ResourcePermission.*;
 import io.luverolla.gradi.exceptions.InvalidPropertyException;
 import io.luverolla.gradi.filters.*;
@@ -143,11 +144,22 @@ public class ResourceService extends EntityService<Resource>
 	 */
 	public SortedSet<Resource> get(User u, Type min, EntitySetRequest req)
 	{
-		SortedSet<Resource> found = get(req);
+		Predicate<Resource> isRestricted = r ->
+			r.getVisibility().equals(Visibility.RESTRICTED);
 
-		found.removeIf(r -> r.getPermissions().stream().noneMatch(p ->
-			p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal()
-		));
+		Predicate<Resource> isWriteRequired = r ->
+			min.ordinal() > Type.READ.ordinal();
+
+		Predicate<Resource> userHasPermission = r ->
+			r.getPermissions().stream().noneMatch(p ->
+				p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal()
+			);
+
+		Predicate<Resource> notAccessible = r ->
+			(isRestricted.test(r) || isWriteRequired.test(r)) && !userHasPermission.test(r);
+
+		SortedSet<Resource> found = get(req);
+		found.removeIf(notAccessible);
 
 		return found;
 	}
@@ -164,11 +176,22 @@ public class ResourceService extends EntityService<Resource>
 	 */
 	public Resource get(User u, Type min, String code)
 	{
-		Predicate<ResourcePermission> pr = p ->
-			p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal();
+		Predicate<Resource> isRestricted = r ->
+			r.getVisibility().equals(Visibility.RESTRICTED);
+
+		Predicate<Resource> isWriteRequired = r ->
+			min.ordinal() > Type.READ.ordinal();
+
+		Predicate<Resource> userHasPermission = r ->
+			r.getPermissions().stream().noneMatch(p ->
+				p.getUser().equals(u) && p.getType().ordinal() >= min.ordinal()
+			);
+
+		Predicate<Resource> notAccessible = r ->
+			(isRestricted.test(r) || isWriteRequired.test(r)) && !userHasPermission.test(r);
 
 		Resource found = get(code);
-		if(found.getPermissions().stream().noneMatch(pr))
+		if(notAccessible.test(found))
 			throw new NoSuchElementException();
 
 		return found;
