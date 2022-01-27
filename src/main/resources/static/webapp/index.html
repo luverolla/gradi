@@ -2,12 +2,149 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>Webapp</title>
+        <title>Webapp - Homepage</title>
 
+        <link rel="stylesheet" href="./vendor/bootstrap/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="./vendor/bootstrap/icons/icons.css" />
         <link rel="stylesheet" href="./css/style.css" />
     </head>
     <body>
-        <h1>Hello World</h1>
-        <p>This is how text will look on webapp</p>
+        <header class="gradi-header">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white p-0 border-bottom" style="height: 3rem;">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">GRADI</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#gradi-nav-menu" aria-controls="gradi-nav-menu"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="bi-chevron-down"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="gradi-nav-menu">
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Settings</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">New resource</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Profile</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <main class="gradi-main bg-light p-2 px-lg-4">
+            <div class="container p-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white" id="gradi-search">
+                        <i class="bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" aria-label="Search" aria-describedby="gradi-search"
+                           placeholder="Search by resource code, resource type code or keyword">
+                </div>
+            </div>
+
+            <div id="gradi-start-panel">
+                <div id="gradi-most-active" class="gradi-list-box">
+                    <h5 class="mb-3">Most active authors</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <div><a href="#">Amy Green</a></div>
+                            <div class="text-muted">1.466.870 resources</div>
+                        </li>
+                        <li class="list-group-item">
+                            <div><a href="#">Marco Rossi</a></div>
+                            <div class="text-muted">40.336 resources</div>
+                        </li>
+                        <li class="list-group-item">
+                            <div>
+                                <a href="#">Giovanni Verdi</a>
+                            </div>
+                            <div class="text-muted">
+                                1.256 resources
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div><a href="#">Joe Van Hoeck</a></div>
+                            <div class="text-muted">1 resources</div>
+                        </li>
+                    </ul>
+                    <a href="#" class="d-block mt-1 text-center text-lg-end">View all</a>
+                </div>
+                <div id="gradi-last-published" class="gradi-list-box">
+                    <h5 class="mb-3">Last published resources</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <div><a href="#">#08F45B2KZ3 - Standard procedure for external events</a></div>
+                            <div>
+                                <a href="#" class="text-muted">
+                                    <small class="text-muted">#004F3210KM - Manual and guides</small>
+                                </a>
+                            </div>
+                            <div>
+                                <small><a href="#" class="text-muted">Mario Rossi</a></small>
+                                &nbsp;-&nbsp;
+                                <small class="text-muted">13/01/2022 08:30 UTC+1</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div><a href="#">#00K12L903Z - Tablet Android 10"</a></div>
+                            <div>
+                                <a href="#" class="text-muted">
+                                    <small class="text-muted">#KA0F13YU3I - Electronic devices</small>
+                                </a>
+                            </div>
+                            <div>
+                                <small><a href="#" class="text-muted">Albert Smith</a></small>
+                                &nbsp;-&nbsp;
+                                <small class="text-muted">21/10/2021 12:00 UTC+1</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div><a href="#">#MKT1340098 - Application form</a></div>
+                            <div>
+                                <a href="#" class="text-muted">
+                                    <small class="text-muted">#4490S0FU55 - Forms and contracts</small>
+                                </a>
+                            </div>
+                            <div>
+                                <small><a href="#" class="text-muted">Admin</a></small>
+                                &nbsp;-&nbsp;
+                                <small class="text-muted">30/05/2021 19:45 UTC+1</small>
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="#" class="d-block mt-1 text-center text-lg-end">View all</a>
+                </div>
+
+                <div id="gradi-resource-types" class="gradi-list-box">
+                    <h5 class="mb-3">Resource types</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <div><a href="#">#004F3210KM - Manuals and guides</a></div>
+                            <div class="text-muted">800 resources</div>
+                        </li>
+                        <li class="list-group-item">
+                            <div><a href="#">#KA0F13YU3I - Electronic devices</a></div>
+                            <div class="text-muted">760 resources</div>
+                        </li>
+                        <li class="list-group-item">
+                            <div>
+                                <a href="#">#4490S0FU55 - Forms and contracts</a>
+                            </div>
+                            <div class="text-muted">
+                                230 resources
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="#" class="d-block mt-1 text-center text-lg-end">View all</a>
+                </div>
+
+            </div>
+        </main>
+
+        <script src="./vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="./js/script.js"></script>
     </body>
 </html>
