@@ -1,90 +1,93 @@
 package io.luverolla.gradi.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import io.luverolla.gradi.exceptions.ResourceTypeMismatchException;
-
 import io.luverolla.gradi.structures.CodedEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import io.luverolla.gradi.structures.DatedEntity;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "gradi_resources")
-@Getter
-@Setter
-@NoArgsConstructor
-public class Resource extends CodedEntity
-{
-    public enum Visibility { PUBLIC, INTERNAL, RESTRICTED };
+@Table(name = "resource")
+public class Resource implements CodedEntity, DatedEntity {
+    @Id
+    @Column(name = "code", nullable = false)
+    private java.lang.Integer code;
 
-    @Column(nullable = false)
-    private String name;
+    @Lob
+    @Column(name = "title", nullable = false)
+    private java.lang.String title;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
-    private Visibility visibility;
+    @Column(name = "description", nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    private java.lang.String description;
 
-    @Column(columnDefinition = "text")
-    private String description;
+    @Column(name = "created_at", nullable = false)
+    private java.time.OffsetDateTime createdAt;
 
-    @JsonIgnoreProperties({"resources"})
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "resource_type_code")
+    @Column(name = "updated_at", nullable = false)
+    private java.time.OffsetDateTime updatedAt;
+
+    @Column(name = "visibility", columnDefinition = "resource_visibility not null")
+    private String visibility;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "type", nullable = false)
     private ResourceType type;
-    
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "parent_resource_code")
-    private Resource parent;
 
-    @JsonIgnoreProperties({"parent"})
-    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<Resource> children;
-
-    @JsonIgnoreProperties({"resource"})
-    @OneToMany(mappedBy = "resource", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<ResourceFile> files;
-
-    @JsonIgnoreProperties({"resource"})
-    @OneToMany(mappedBy = "resource", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<ResourceAttribute> attributes;
-
-    @JsonIgnoreProperties({"resource"})
-    @OneToMany(mappedBy = "resource", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<ResourcePermission> permissions;
-
-    public ResourceAttribute getAttribute(ResourceProperty p)
-    {
-        return attributes.stream()
-            .filter(a -> a.getProperty().equals(p))
-                .findFirst().orElseThrow(ResourceTypeMismatchException::new);
+    public ResourceType getType() {
+        return type;
     }
 
-    public Set<User> getPermissionsUsers()
-    {
-        return permissions.stream()
-            .map(ResourcePermission::getUser)
-                .collect(Collectors.toSet());
+    public void setType(ResourceType type) {
+        this.type = type;
     }
 
-    public Set<ResourcePermission.Type> getPermissionsTypes()
-    {
-        return permissions.stream()
-            .map(ResourcePermission::getType)
-                .collect(Collectors.toSet());
+    public String getVisibility() {
+        return visibility;
     }
 
-    public ResourcePermission.Type getPermissionType(User u)
-    {
-        ResourcePermission p = permissions.stream()
-            .filter(e -> e.getUser().equals(u)).findFirst()
-                .orElseThrow(NoSuchElementException::new);
-
-        return p.getType();
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
     }
+
+    public java.lang.Integer getCode() {
+        return code;
+    }
+
+    public void setCode(java.lang.Integer code) {
+        this.code = code;
+    }
+
+    public java.lang.String getTitle() {
+        return title;
+    }
+
+    public void setTitle(java.lang.String title) {
+        this.title = title;
+    }
+
+    public java.lang.String getDescription() {
+        return description;
+    }
+
+    public void setDescription(java.lang.String description) {
+        this.description = description;
+    }
+
+    public java.time.OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.time.OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(java.time.OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
 }

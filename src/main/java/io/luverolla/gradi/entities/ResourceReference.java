@@ -1,46 +1,45 @@
 package io.luverolla.gradi.entities;
 
 import io.luverolla.gradi.structures.DatedEntity;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 
 @Entity
-@Table(name = "permission")
-public class ResourcePermission implements DatedEntity {
+@Table(name = "reference")
+public class ResourceReference implements DatedEntity {
     @EmbeddedId
-    private ResourcePermissionId id;
+    private ResourceReferenceId id;
 
     @MapsId("resource")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "resource", nullable = false)
     private Resource resource;
 
-    @MapsId("user")
+    @MapsId("referred")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "\"user\"", nullable = false)
-    private User user;
+    @JoinColumn(name = "referred", nullable = false)
+    private Resource referred;
+
+    @Lob
+    @Column(name = "title", nullable = false)
+    private java.lang.String title;
+
+    @Column(name = "description", nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    private java.lang.String description;
 
     @Column(name = "created_at", nullable = false)
     private java.time.OffsetDateTime createdAt;
+
     @Column(name = "updated_at", nullable = false)
     private java.time.OffsetDateTime updatedAt;
 
-    @Column(name = "type", columnDefinition = "permission_type(9) not null")
-    private String type;
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public ResourcePermissionId getId() {
+    public ResourceReferenceId getId() {
         return id;
     }
 
-    public void setId(ResourcePermissionId id) {
+    public void setId(ResourceReferenceId id) {
         this.id = id;
     }
 
@@ -52,12 +51,28 @@ public class ResourcePermission implements DatedEntity {
         this.resource = resource;
     }
 
-    public User getUser() {
-        return user;
+    public Resource getReferred() {
+        return referred;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setReferred(Resource referred) {
+        this.referred = referred;
+    }
+
+    public java.lang.String getTitle() {
+        return title;
+    }
+
+    public void setTitle(java.lang.String title) {
+        this.title = title;
+    }
+
+    public java.lang.String getDescription() {
+        return description;
+    }
+
+    public void setDescription(java.lang.String description) {
+        this.description = description;
     }
 
     public java.time.OffsetDateTime getCreatedAt() {

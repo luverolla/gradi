@@ -17,7 +17,7 @@ public class EntityFilterUpdatedAt<E extends DatedEntity> extends Filter<E, List
         boolean res = true;
 
         if(min != null)
-            res = res && e.getUpdatedAt().compareTo(min) >= 0;
+            res = e.getUpdatedAt().compareTo(min) >= 0;
 
         if(max != null)
             res = res && e.getUpdatedAt().compareTo(max) <= 0;

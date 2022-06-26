@@ -1,45 +1,72 @@
 package io.luverolla.gradi.entities;
 
 import io.luverolla.gradi.structures.CodedEntity;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.Set;
 
-@Table(name = "gradi_messages")
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Message extends CodedEntity
-{
-    public enum Visibility { GLOBAL, EDITORS, PRIVATE };
+@Table(name = "message")
+public class Message implements CodedEntity {
+    @Id
+    @Column(name = "code", nullable = false)
+    private java.lang.Integer code;
 
-    public enum Type { GENERAL, INFO, WARNING, SECURITY };
+    @Lob
+    @Column(name = "subject", nullable = false)
+    private java.lang.String subject;
 
-    @Column
-    private String subject;
+    @Column(name = "datetime", nullable = false)
+    private java.time.OffsetDateTime datetime;
 
-    @Column
-    @Enumerated(EnumType.ORDINAL)
-    private Visibility visibility;
+    @Column(name = "text", nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    private java.lang.String text;
 
-    @Column
-    @Enumerated(EnumType.ORDINAL)
-    private Type type;
+    @ManyToMany
+    @JoinTable(name = "recipient",
+            joinColumns = @JoinColumn(name = "message"),
+            inverseJoinColumns = @JoinColumn(name = "user"))
+    private java.util.Set<User> users = new java.util.LinkedHashSet<>();
 
-    @Column(columnDefinition = "text")
-    private String text;
+    public java.lang.Integer getCode() {
+        return code;
+    }
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinTable(
-        name = "gradi_messages_recipients",
-        joinColumns = { @JoinColumn(name = "user_code") },
-        inverseJoinColumns = { @JoinColumn(name = "message_code") }
-    )
-    private Set<User> recipients;
+    public void setCode(java.lang.Integer code) {
+        this.code = code;
+    }
+
+    public java.lang.String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(java.lang.String subject) {
+        this.subject = subject;
+    }
+
+    public java.time.OffsetDateTime getDatetime() {
+        return datetime;
+    }
+
+    public void setDatetime(java.time.OffsetDateTime datetime) {
+        this.datetime = datetime;
+    }
+
+    public java.lang.String getText() {
+        return text;
+    }
+
+    public void setText(java.lang.String text) {
+        this.text = text;
+    }
+
+    public java.util.Set<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(java.util.Set<User> users) {
+        this.users = users;
+    }
+
 }

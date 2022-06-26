@@ -1,37 +1,92 @@
 package io.luverolla.gradi.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import io.luverolla.gradi.structures.CodedEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import io.luverolla.gradi.structures.DatedEntity;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 
-import java.util.Set;
-
 @Entity
-@Table(name = "gradi_resource_types")
-@Getter
-@Setter
-@NoArgsConstructor
-public class ResourceType extends CodedEntity
-{
-    @Column(nullable = false)
-    private String name;
+@Table(name = "type")
+public class ResourceType implements CodedEntity, DatedEntity {
+    @Id
+    @Column(name = "code", nullable = false)
+    private java.lang.Integer code;
 
-    @Column(columnDefinition = "text")
-    private String brief;
+    @Lob
+    @Column(name = "name", nullable = false)
+    private java.lang.String name;
 
-    @Column(columnDefinition = "text")
-    private String description;
+    @Column(name = "description", nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    private java.lang.String description;
 
-    @JsonIgnoreProperties({"type"})
-    @OneToMany(mappedBy = "type", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<Resource> resources;
+    @Column(name = "created_at", nullable = false)
+    private java.time.OffsetDateTime createdAt;
 
-    @JsonIgnoreProperties({"resourceType", "attributes"})
-    @OneToMany(mappedBy = "resourceType", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<ResourceProperty> properties;
+    @Column(name = "updated_at", nullable = false)
+    private java.time.OffsetDateTime updatedAt;
+
+    @OneToMany(mappedBy = "type")
+    private java.util.Set<io.luverolla.gradi.entities.ResourceProperty> properties = new java.util.LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "type")
+    private java.util.Set<Resource> resources = new java.util.LinkedHashSet<>();
+
+    public java.lang.Integer getCode() {
+        return code;
+    }
+
+    public void setCode(java.lang.Integer code) {
+        this.code = code;
+    }
+
+    public java.lang.String getName() {
+        return name;
+    }
+
+    public void setName(java.lang.String name) {
+        this.name = name;
+    }
+
+    public java.lang.String getDescription() {
+        return description;
+    }
+
+    public void setDescription(java.lang.String description) {
+        this.description = description;
+    }
+
+    public java.time.OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.time.OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(java.time.OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public java.util.Set<io.luverolla.gradi.entities.ResourceProperty> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(java.util.Set<io.luverolla.gradi.entities.ResourceProperty> properties) {
+        this.properties = properties;
+    }
+
+    public java.util.Set<Resource> getResources() {
+        return resources;
+    }
+
+    public void setResources(java.util.Set<Resource> resources) {
+        this.resources = resources;
+    }
+
 }

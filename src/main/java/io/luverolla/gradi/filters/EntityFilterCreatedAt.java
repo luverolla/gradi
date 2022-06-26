@@ -17,7 +17,7 @@ public class EntityFilterCreatedAt<E extends DatedEntity> extends Filter<E, List
         boolean res = true;
 
         if(min != null)
-            res = res && e.getCreatedAt().compareTo(min) >= 0;
+            res = e.getCreatedAt().compareTo(min) >= 0;
 
         if(max != null)
             res = res && e.getCreatedAt().compareTo(max) <= 0;

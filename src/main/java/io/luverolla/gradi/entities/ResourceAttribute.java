@@ -1,69 +1,85 @@
 package io.luverolla.gradi.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import io.luverolla.gradi.structures.DatedEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 
-import java.time.OffsetDateTime;
-
-/**
- * Resource custom attribute
- *
- * <p>
- *     Here, <code>value</code> is expressed as a {@link String} regardless of the original data type.
- *     In case of single values, the relative <code>toString()</code> method, while, in case of a set of values
- *     (for FIXED and RESOURCE types), elements are put in a string separated by semicolon (;)
- * </p>
- */
 @Entity
-@Table(name = "gradi_resource_attributes")
-@Getter
-@Setter
-@NoArgsConstructor
-public class ResourceAttribute implements DatedEntity
-{
-    @Id
-    private String name;
+@Table(name = "attribute")
+public class ResourceAttribute implements DatedEntity {
+    @EmbeddedId
+    private ResourceAttributeId id;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private OffsetDateTime updatedAt;
-
-    @Column(columnDefinition = "text")
-    private String value;
-
-    @JsonIgnoreProperties({"attributes", "type"})
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "resource_property_name", nullable = false)
-    private ResourceProperty property;
-
-    @JsonIgnoreProperties({"attributes"})
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "resource_code", nullable = false)
+    @MapsId("resource")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "resource", nullable = false)
     private Resource resource;
 
-    @Override
-    public boolean equals(Object o)
-    {
-        if(this == o)
-            return true;
+    @MapsId
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumns({
+            @JoinColumn(name = "property_type", referencedColumnName = "type", nullable = false),
+            @JoinColumn(name = "property_name", referencedColumnName = "name", nullable = false)
+    })
+    private ResourceProperty property;
 
-        if(o == null || getClass() != o.getClass())
-            return false;
+    @Column(name = "value", nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    private java.lang.String value;
 
-        ResourceAttribute that = (ResourceAttribute) o;
-        return resource.equals(that.getResource()) && property.equals(that.getProperty());
+    @Column(name = "created_at", nullable = false)
+    private java.time.OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private java.time.OffsetDateTime updatedAt;
+
+    public ResourceAttributeId getId() {
+        return id;
     }
+
+    public void setId(ResourceAttributeId id) {
+        this.id = id;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+
+    public ResourceProperty getProperty() {
+        return property;
+    }
+
+    public void setProperty(ResourceProperty property) {
+        this.property = property;
+    }
+
+    public java.lang.String getValue() {
+        return value;
+    }
+
+    public void setValue(java.lang.String value) {
+        this.value = value;
+    }
+
+    public java.time.OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.time.OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(java.time.OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
 }

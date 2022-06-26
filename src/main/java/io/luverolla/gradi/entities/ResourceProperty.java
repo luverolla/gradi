@@ -1,78 +1,91 @@
 package io.luverolla.gradi.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import io.luverolla.gradi.structures.DatedEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-
-import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
-/**
- * Custom resource property of given backing class. This last one MUST be comparable
- *
- * @see ResourceAttribute
- */
 @Entity
-@Table(name = "gradi_resource_properties")
-@Getter
-@Setter
-@NoArgsConstructor
-public class ResourceProperty implements DatedEntity
-{
-    /**
-     * Property's value type
-     *
-     * <ul>
-     *     <li><code>STRING</code> is for single-line, plain-text values, while <code>TEXT</code> is for formatted multiline text</li>
-     *     <li><code>FIXED</code> is for enum-like values, or, for example, string values that comes from an HTML select</li>
-     *     <li><code>RESOURCE</code> is for internal reference with resources' URIs</li>
-     *     <li><code>NUMERIC</code></li>
-     * </ul>
-     */
-    public enum Type { STRING, TEXT, NUMERIC, DATETIME, BOOLEAN, FIXED, RESOURCE };
+@Table(name = "property")
+public class ResourceProperty implements DatedEntity {
+    @EmbeddedId
+    private ResourcePropertyId id;
 
-    @Id
-    private String name;
+    @Column(name = "created_at", nullable = false)
+    private java.time.OffsetDateTime createdAt;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    @Column(name = "updated_at", nullable = false)
+    private java.time.OffsetDateTime updatedAt;
+    @Column(name = "description", nullable = false)
+    @Type(type = "org.hibernate.type.TextType")
+    private java.lang.String description;
 
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private OffsetDateTime updatedAt;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "type", nullable = false)
+    private ResourceType type;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
-    private Type type;
+    @Column(name = "data_type", columnDefinition = "property_type not null")
+    private String dataType;
 
-    @JsonIgnoreProperties({"resources", "properties"})
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="resource_type_code", nullable = false)
-    private ResourceType resourceType;
+    @OneToMany(mappedBy = "property")
+    private Set<ResourceAttribute> attributes = new LinkedHashSet<>();
 
-    @JsonIgnoreProperties({"property"})
-    @OneToMany(mappedBy = "property", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    private Set<ResourceAttribute> attributes;
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if(this == o)
-            return true;
-
-        if(o == null || getClass() != o.getClass())
-            return false;
-
-        ResourceProperty that = (ResourceProperty) o;
-        return name.equals(that.getName());
+    public Set<ResourceAttribute> getAttributes() {
+        return attributes;
     }
+
+    public void setAttributes(Set<ResourceAttribute> attributes) {
+        this.attributes = attributes;
+    }
+
+    public ResourceType getType() {
+        return type;
+    }
+
+    public void setType(ResourceType type) {
+        this.type = type;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public ResourcePropertyId getId() {
+        return id;
+    }
+
+    public void setId(ResourcePropertyId id) {
+        this.id = id;
+    }
+
+    public java.time.OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.time.OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(java.time.OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public java.lang.String getDescription() {
+        return description;
+    }
+
+    public void setDescription(java.lang.String description) {
+        this.description = description;
+    }
+
 }
