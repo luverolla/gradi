@@ -2,10 +2,6 @@
 
 This is the GitHub repository for the GRADI software.
 
-> __Development status__
->
-> Working on webapp
-
 GRADI (italian short of _**GR**ande **A**rchivio **DI**gitale_, in english
 _Great Digital Archive_) it's a software for management, editing and
 consultation of digital resources of all kinds.
@@ -24,8 +20,7 @@ of properties each one with its value type (string, numeric, datetime, ...).
 A unique name is automatically generated.
 
 The software is provided with a backend server, listening on `localhost:9000` and consists of
-a secured REST API, listening on `localhost:9000/api`, and a web interface, listening on
-`localhost:9000/web/`.
+a secured REST API, listening on `localhost:9000/api`.
 
 ## Documentation
 
